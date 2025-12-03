@@ -1,42 +1,130 @@
 import ansys.fluent.core as pyfluent
 
-# Import File
-import_file_name = ""
+# ------------------------------------------------------------------------------
+# Launch Fluent Meshing
+# ------------------------------------------------------------------------------
+print("Launching Fluent Meshing...")
 meshing_session = pyfluent.launch_fluent(
-    mode=pyfluent.FluentMode.MESHING, precision=pyfluent.Precision.DOUBLE, processor_count=60, dimension=3, mpi_type="intel"
+    mode=pyfluent.FluentMode.MESHING,
+    precision=pyfluent.Precision.DOUBLE,
+    processor_count=60,
+    dimension=3,
+    mpi_type="intel"
 )
+
 workflow = meshing_session.workflow
-workflow.InitializeWorkflow(WorkflowType='Watertight Geometry')
 tasks = workflow.TaskObject
-import_geometry = tasks['Import Geometry']
+
+workflow.InitializeWorkflow(WorkflowType="Watertight Geometry")
+
+
+# ------------------------------------------------------------------------------
+# Import Geometry
+# ------------------------------------------------------------------------------
+print("Importing geometry...")
+import_geometry = tasks["Import Geometry"]
 import_geometry.Arguments.set_state({
-    'FileName': import_file_name, 'LengthUnit': 'm'
+    "FileName": "",      # <--- add your file path
+    "LengthUnit": "m"
 })
 import_geometry.Execute()
+print("Geometry imported.\n")
 
-# Add Local Sizing
-add_local_sizing = tasks['Add Local Sizing']
-add_local_sizing.AddChildToTask()
-add_local_sizing.Execute()
 
-# Generate Surface Mesh
-create_surface_mesh = tasks['Generate the Surface Mesh']
-create_surface_mesh.Arguments = {
-    'CFDSurfaceMeshControls': {'MaxSize': 0.3}
-}
-create_surface_mesh.Execute()
+# ------------------------------------------------------------------------------
+# Add Local Sizing: stuff / wheels / aero
+# ------------------------------------------------------------------------------
 
-# Improve Surface Mesh
-imp_surf = tasks["Improve Surface Mesh"]
-imp_surf.AddChildToTask()
-imp_surf.InsertCompoundChildTask()
-surf_task = tasks[imp_surf.ChildNames[0]]
-surf_task.Arguments.set_state({
-    "FaceQualityLimit": 0.7
+def add_local_sizing(labels, min_size, max_size, curvature_angle, growth_rate, scope):
+    """Creates one local sizing control."""
+    add_ls = tasks["Add Local Sizing"]
+    add_ls.AddChildToTask()
+    add_ls.InsertCompoundChildTask()
+
+    child = tasks[add_ls.ChildNames[-1]]
+
+    child.Arguments.set_state({
+        "ControlName": f"LS_{child.Name}",
+        "SizeControlType": "Curvature",
+        "LocalMin": min_size,
+        "MaxSize": max_size,
+        "GrowthRate": growth_rate,
+        "CurvatureNormalAngle": curvature_angle,
+        "Scope": scope,
+        "SelectBy": "label",
+        "Labels": labels,
+    })
+
+    add_ls.Execute()
+    print(f"  → Added local sizing on: {labels}")
+
+
+print("Adding local sizing controls...")
+
+# 1️⃣ STUFF
+add_local_sizing(
+    labels=["chassis"],
+    min_size=0.001,
+    max_size=0.064,
+    curvature_angle=12,
+    growth_rate=1.2,
+    scope="faces-and-edges"
+)
+
+# 2️⃣ WHEELS
+add_local_sizing(
+    labels=["fw", "rw", "fwb", "rwb"],
+    min_size=0.0005,
+    max_size=0.032,
+    curvature_angle=18,
+    growth_rate=1.2,
+    scope="faces"
+)
+
+# 3️⃣ AERO
+add_local_sizing(
+    labels=["frontwing", "undertray", "rearwing"],
+    min_size=0.0005,
+    max_size=0.008,
+    curvature_angle=9,
+    growth_rate=1.2,
+    scope="faces-and-edges"
+)
+
+print("Local sizing complete.\n")
+
+
+# ------------------------------------------------------------------------------
+# Generate Surface Mesh (must be BEFORE Describe Geometry)
+# ------------------------------------------------------------------------------
+print("Generating surface mesh...")
+
+surface_mesh = tasks["Generate the Surface Mesh"]
+
+surface_mesh.Arguments.set_state({
+    "MinimumSize": 0.002,
+    "MaximumSize": 0.256,
+    "GrowthRate": 1.19999,
+    "SizeFunctions": "Curvature & Proximity",
+    "CurvatureNormalAngle": 18,
+    "CellsPerGap": 1,
+    "ScopeProximityTo": "faces-and-edges",
+    "DrawSizeBoxes": True,
+    "SeparateBoundaryZonesByAngle": "No",
 })
-imp_surf.Execute()
 
+surface_mesh.UpdateChildTasks()
+surface_mesh.Execute()
+
+print("Surface mesh complete.")
+print("Surface mesh quality:", surface_mesh.Outputs["Quality"].get_state(), "\n")
+
+
+# ------------------------------------------------------------------------------
 # Describe Geometry
+# ------------------------------------------------------------------------------
+print("Describing geometry...")
+
 describe_geometry = tasks["Describe Geometry"]
 describe_geometry.UpdateChildTasks(SetupTypeChanged=False)
 describe_geometry.Arguments.set_state({
@@ -45,7 +133,14 @@ describe_geometry.Arguments.set_state({
 describe_geometry.UpdateChildTasks(SetupTypeChanged=True)
 describe_geometry.Execute()
 
+print("Geometry description complete.\n")
+
+
+# ------------------------------------------------------------------------------
 # Update Boundaries
+# ------------------------------------------------------------------------------
+print("Updating boundaries...")
+
 update_boundaries = tasks["Update Boundaries"]
 update_boundaries.Arguments.set_state({
     "BoundaryLabelList": ["wall-inlet"],
@@ -55,43 +150,75 @@ update_boundaries.Arguments.set_state({
 })
 update_boundaries.Execute()
 
-# Update Regions
 tasks["Update Regions"].Execute()
 
+print("Boundary update complete.\n")
+
+
+# ------------------------------------------------------------------------------
 # Add Boundary Layers
+# ------------------------------------------------------------------------------
+print("Adding boundary layers...")
+
 add_boundary_layers = tasks["Add Boundary Layers"]
 add_boundary_layers.AddChildToTask()
 add_boundary_layers.InsertCompoundChildTask()
-transition = tasks["last-ratio_1"]
-transition.Arguments.set_state({
+
+bl = tasks["last-ratio_1"]
+bl.Arguments.set_state({
     "BLControlName": "last-ratio_1",
-    "BoundaryZones": ["frontwing", "chassis", "fw", "fwb", "rw", "rwb", "undertray", "rearwing"],  # ← your zones
-    "NumberOfLayers": 10,                   # ← number of layers
-    "LastLayerRatio": 10.0                  # ← last-layer ratio
+    "BoundaryZones": ["frontwing", "chassis", "fw", "fwb", "rw", "rwb", "undertray", "rearwing"],
+    "NumberOfLayers": 10,
+    "LastLayerRatio": 10.0
 })
+
 add_boundary_layers.Arguments.set_state({})
-transition.Execute()
+bl.Execute()
 
+print("Boundary layers added.\n")
+
+
+# ------------------------------------------------------------------------------
 # Generate Volume Mesh
-create_volume_mesh = tasks["Generate the Volume Mesh"]
-create_volume_mesh.Arguments = {
-    "Solver": "Fluent",                  # Solver type
-    "FillWith": "poly-hexcore",          # Fill with poly-hexcore
-    "PeelLayers": 1,                     # Peel layers
-    "MinCellLength": 0.0005,             # Min cell length [m]
-    "MaxCellLength": 0.256,              # Max cell length [m]
-    "EnableParallel": True               # Enable parallel meshing
-}
-create_volume_mesh.Execute()
+# ------------------------------------------------------------------------------
+print("Generating volume mesh...")
 
-# Improve Volumetric Mesh
+vol_mesh = tasks["Generate the Volume Mesh"]
+vol_mesh.Arguments.set_state({
+    "Solver": "Fluent",
+    "FillWith": "poly-hexcore",
+    "PeelLayers": 1,
+    "MinCellLength": 0.0005,
+    "MaxCellLength": 0.256,
+    "EnableParallel": True
+})
+
+vol_mesh.Execute()
+
+print("Volume mesh created.")
+print("Volume mesh quality:", vol_mesh.Outputs["Quality"].get_state(), "\n")
+
+
+# ------------------------------------------------------------------------------
+# Improve Volume Mesh
+# ------------------------------------------------------------------------------
+print("Improving volume mesh...")
+
 imp_vol = tasks["Improve Volume Mesh"]
 imp_vol.AddChildToTask()
 imp_vol.InsertCompoundChildTask()
-vol_task = tasks[imp_vol.ChildNames[0]]
-vol_task.Arguments.set_state({
-    "QualityMethod": "Orthogonal",   # options: "Orthogonal", "Skewness"
+
+vol_child = tasks[imp_vol.ChildNames[0]]
+vol_child.Arguments.set_state({
+    "QualityMethod": "Orthogonal",
     "CellQualityLimit": 0.2,
-    "UseAdditionalCriteria": False   # UI: “No”
+    "UseAdditionalCriteria": False
 })
+
 imp_vol.Execute()
+
+print("Volume mesh improvement complete.")
+print("Final volume mesh quality:",
+      vol_mesh.Outputs["Quality"].get_state(), "\n")
+
+print("Meshing process complete.")
