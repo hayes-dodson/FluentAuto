@@ -5,8 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.0.1">
-      <change afterPath="$PROJECT_DIR$/backup/fc26g40-2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/FullCar_26_GEKO40.py" beforeDir="false" afterPath="$PROJECT_DIR$/FullCarCFDScripts/FullCar_26_GEKO40.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/config/settings.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/auto_boundary_layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/auto_sizing.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/hexcore.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/mesh_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/utils_detect_zones.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/contours.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/forces.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/residuals.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/aero_coeffs.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/auto_restart.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/boundary_conditions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/boundary_layer_tools.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/projected_area.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/ramping.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/reference_values.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/solver/turbulence.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/FullCar_26_GEKO40.py" beforeDir="false" afterPath="$PROJECT_DIR$/backup/FullCar_26_GEKO40.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +57,9 @@
   &quot;associatedIndex&quot;: 6
 }</component>
   <component name="ProjectId" id="36Kd8wQ8ced9dXgzX9YziTgePj8" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -63,6 +84,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Hayes Dodson\PycharmProjects\FluentAuto\backup" />
       <recent name="C:\Users\Hayes Dodson\PycharmProjects\FluentAuto" />
     </key>
   </component>
@@ -81,7 +103,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764759042476</updated>
-      <workItem from="1764759616143" duration="4749000" />
+      <workItem from="1764759616143" duration="7273000" />
     </task>
     <task id="LOCAL-00001" summary="InitialCommit">
       <option name="closed" value="true" />
@@ -123,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764763775589</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1764764587548</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1764764587548</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
