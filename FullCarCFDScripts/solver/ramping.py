@@ -1,31 +1,43 @@
 def ramp_relaxation(session):
-    solver = session.solver.Settings.Solution.RelaxationFactors
+    """
+    Momentum, pressure, k, and omega relaxation ramp
+    to prevent early floating point errors.
+    """
 
-    print("Relaxation ramp start...")
+    rf = session.solver.Settings.Solution.RelaxationFactors
 
-    solver.set_state({"mom":0.1,"press":0.1,"k":0.1,"omega":0.1})
+    print("[Ramp] Relaxation stage 1...")
+    rf.set_state({"mom": 0.1, "press": 0.1, "k": 0.1, "omega": 0.1})
     session.solution.RunCalculation.iterate(200)
 
-    solver.set_state({"mom":0.3,"press":0.3,"k":0.3,"omega":0.3})
+    print("[Ramp] Relaxation stage 2...")
+    rf.set_state({"mom": 0.3, "press": 0.3, "k": 0.3, "omega": 0.3})
+    session.solution.RunCalculation.iterate(300)
+
+    print("[Ramp] Relaxation stage 3...")
+    rf.set_state({"mom": 0.5, "press": 0.5, "k": 0.5, "omega": 0.5})
     session.solution.RunCalculation.iterate(400)
 
-    solver.set_state({"mom":0.5,"press":0.5,"k":0.5,"omega":0.5})
-    session.solution.RunCalculation.iterate(600)
-
-    print("Relaxation ramp complete.")
+    print("[Ramp] Relaxation ramp complete.")
 
 
 def ramp_CFL(session):
-    ps = session.solver.Settings.Solution.PseudoTransient
+    """
+    Pseudo-transient CFL ramp.
+    """
 
-    print("Pseudo-transient CFL ramp start...")
-    ps.set_state({"enabled": True, "cfl": 1.0})
+    pt = session.solver.Settings.Solution.PseudoTransient
+
+    print("[Ramp] CFL stage 1 (CFL = 1)")
+    pt.set_state({"enabled": True, "cfl": 1.0})
     session.solution.RunCalculation.iterate(300)
 
-    ps.cfl = 5.0
-    session.solution.RunCalculation.iterate(400)
+    print("[Ramp] CFL stage 2 (CFL = 5)")
+    pt.cfl = 5.0
+    session.solution.RunCalculation.iterate(300)
 
-    ps.cfl = 20.0
-    session.solution.RunCalculation.iterate(600)
+    print("[Ramp] CFL stage 3 (CFL = 20)")
+    pt.cfl = 20.0
+    session.solution.RunCalculation.iterate(500)
 
-    print("CFL ramp complete.")
+    print("[Ramp] CFL ramp complete.")

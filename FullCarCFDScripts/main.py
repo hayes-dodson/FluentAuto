@@ -1,103 +1,170 @@
-from config.settings import SETTINGS
+import os
+import ansys.fluent.core as pyfluent
 
+from config.settings import SETTINGS, WHEEL_CENTERS
+
+# Meshing
 from meshing.mesh_pipeline import run_mesh_pipeline
+from meshing.local_refinement_regions import add_all_local_refinements
+from meshing.refinement_boxes import generate_wheel_refinement_boxes
+from meshing.boundary_layer_tools import compute_first_layer_height, compute_bl_height
+
+# Solver
 from solver.turbulence import enable_GEKO, enable_curvature_correction
-from solver.boundary_conditions import apply_boundary_conditions
+from solver.boundary_conditions import apply_boundary_conditions, apply_wheel_motion
 from solver.reference_values import set_reference_values
 from solver.ramping import ramp_relaxation, ramp_CFL
+from solver.auto_restart import check_divergence_and_recover
+from solver.projected_area import compute_projected_area
+from solver.aero_coeffs import get_fluent_coefficients
 
-from post.forces import export_forces
-from post.contours import export_contour
-from post.residuals import export_residuals
-
-import ansys.fluent.core as pyfluent
+# Post
+from post.pressure_maps import export_pressure_map
+from batch.excel_writer import append_results_to_excel
 
 
 def main():
 
     geom = SETTINGS["geometry_path"]
+    output_dir = SETTINGS["output_root"]
+    os.makedirs(output_dir, exist_ok=True)
+
+    print("\n========================================")
+    print("      STARTING FSAE CFD PIPELINE")
+    print("========================================\n")
 
     # ----------------------------------------------------------
-    #  MESHING SESSION
+    #              FLUENT MESHING SESSION
     # ----------------------------------------------------------
-    print("\n=== Launching Fluent Meshing ===\n")
+    print("Launching Fluent Meshing...")
 
     meshing = pyfluent.launch_fluent(
         mode=pyfluent.FluentMode.MESHING,
         precision=pyfluent.Precision.DOUBLE,
         processor_count=60,
-        mpi_type="intel",
         dimension=3,
+        mpi_type="intel"
     )
 
+    # ---------- IMPORT GEOMETRY ----------
     run_mesh_pipeline(meshing, geom, SETTINGS)
 
+    # ---------- ADD GLOBAL REFINEMENT REGIONS ----------
+    print("Adding local refinement regions...")
+    add_all_local_refinements(meshing)
+
+    # ---------- WHEEL REFINEMENT BOXES ----------
+    print("Adding wheel refinement boxes...")
+    generate_wheel_refinement_boxes(meshing, SETTINGS)
+
+    # ---------- SURFACE MESH ----------
+    print("Generating surface mesh...")
+    surface_task = meshing.workflow.TaskObject["Generate the Surface Mesh"]
+    surface_task.Execute()
+
+    # ---------- OVERSET: VOLUME MESH ----------
+    print("Generating volume mesh...")
+    volume_task = meshing.workflow.TaskObject["Generate the Volume Mesh"]
+    volume_task.Execute()
+
+    # Save mesh
+    mesh_file = os.path.join(output_dir, "mesh.msh.h5")
+    meshing.meshing.SaveMesh(file_path=mesh_file)
+    print("Saved mesh to:", mesh_file)
+
 
     # ----------------------------------------------------------
-    #  SOLVER SESSION
+    #                 FLUENT SOLVER SESSION
     # ----------------------------------------------------------
-    print("\n=== Launching Fluent Solver ===\n")
+    print("\nLaunching Fluent Solver...")
 
-    session = pyfluent.launch_fluent(
+    solver = pyfluent.launch_fluent(
         mode=pyfluent.FluentMode.SOLVER,
         precision=pyfluent.Precision.DOUBLE,
         processor_count=60,
-        mpi_type="intel",
         dimension=3,
+        mpi_type="intel"
     )
 
-    # --- Models ---
-    enable_GEKO(session)
+    solver.solver.File.Read(file_type="mesh", file_name=mesh_file)
 
-    # --- BCs ---
-    apply_boundary_conditions(session, SETTINGS)
+    # ---------- TURBULENCE MODEL ----------
+    enable_GEKO(solver)
 
-    # --- Ref Values ---
-    set_reference_values(session)
+    # ---------- BOUNDARY CONDITIONS ----------
+    apply_boundary_conditions(solver, SETTINGS)
 
-    # ----------------------------------------------------------
-    # RAMP SEQUENCE (FLOATING-POINT SAFE)
-    # ----------------------------------------------------------
-    print("\n=== Solver Stabilization Ramps ===\n")
+    # ---------- WHEEL MOTION ----------
+    apply_wheel_motion(solver, SETTINGS)
 
-    # Relaxation ramp (0.1 → 0.3 → 0.5)
-    ramp_relaxation(session)
+    # ---------- REFERENCE VALUES ----------
+    set_reference_values(solver, SETTINGS)
 
-    # CFL ramp (1 → 5 → 20)
-    ramp_CFL(session)
+    # ---------- RAMP STAGE ----------
+    print("\nRunning relaxation & CFL ramps...")
+    ramp_relaxation(solver)
+    ramp_CFL(solver)
 
-    # ----------------------------------------------------------
-    # TURN ON CURVATURE CORRECTION HERE
-    # ----------------------------------------------------------
-    enable_curvature_correction(session)
+    # ---------- ADD CURVATURE CORRECTION ----------
+    enable_curvature_correction(solver)
 
-    # ----------------------------------------------------------
-    # FINAL SOLVE
-    # ----------------------------------------------------------
-    print("\n=== Final Solve (2000+ iterations) ===\n")
+    # ---------- MAIN SOLVE ----------
+    print("\nRunning main solve...")
+    solver.solution.RunCalculation.iterate(SETTINGS["max_final_iterations"])
 
-    session.solution.RunCalculation.iterate(2000)
+    # ---------- DIVERGENCE CHECK ----------
+    check_divergence_and_recover(solver, SETTINGS)
 
     # ----------------------------------------------------------
-    # POSTPROCESS
+    #                  POSTPROCESSING
     # ----------------------------------------------------------
-    print("\n=== Postprocessing ===\n")
 
-    # Forces
-    export_forces(session,
-                  zones=["frontwing", "rearwing", "undertray", "chassis"],
-                  file="forces.csv")
+    # ---------- PROJECTED AREA ----------
+    A_full = compute_projected_area(solver, SETTINGS)
 
-    # Contour
-    export_contour(session,
-                   variable="pressure",
-                   plane="xy",
-                   file="pressure.png")
+    # ---------- AERO COEFFICIENTS ----------
+    coeffs = get_fluent_coefficients(solver)
+    Cd = coeffs["Cd"]
+    Cl = coeffs["Cl"]
+    SCx = Cd * A_full
+    SCz = Cl * A_full
 
-    # Residuals
-    export_residuals(session, "residuals.csv")
+    print("\n===== FINAL RESULTS =====")
+    print(f"Cd  = {Cd}")
+    print(f"Cl  = {Cl}")
+    print(f"SCx = {SCx}")
+    print(f"SCz = {SCz}")
+    print("=========================\n")
 
-    print("\n=== CFD Pipeline Complete ===\n")
+    # ---------- PRESSURE MAP ----------
+    export_pressure_map(solver, file=os.path.join(output_dir, "pressure_map.png"))
+
+    # ---------- SAVE CASE & DATA ----------
+    case_file = os.path.join(output_dir, "final.cas.h5")
+    data_file = os.path.join(output_dir, "final.dat.h5")
+
+    solver.solver.File.Write(file_type="case", file_name=case_file)
+    solver.solver.File.Write(file_type="data", file_name=data_file)
+    print("Saved:", case_file)
+    print("Saved:", data_file)
+
+    # ---------- EXCEL SUMMARY ----------
+    excel_path = os.path.join(output_dir, "summary.xlsx")
+    append_results_to_excel(
+        excel_path,
+        {
+            "Cd": Cd,
+            "Cl": Cl,
+            "SCx": SCx,
+            "SCz": SCz,
+            "Fx": None,   # optional, can be added later
+            "Fz": None,
+            "Area": A_full
+        },
+        case_name=os.path.basename(geom)
+    )
+
+    print("\nPipeline complete. Results saved to:", output_dir)
 
 
 if __name__ == "__main__":

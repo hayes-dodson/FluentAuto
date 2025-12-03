@@ -1,89 +1,113 @@
-from .auto_sizing import add_local_sizing
-from .auto_boundary_layers import create_BL_control
-from .hexcore import generate_hexcore
-from .utils_detect_zones import detect_enclosure_zone
+import time
+from meshing.local_refinement_regions import add_all_local_refinements
+from meshing.refinement_boxes import generate_wheel_refinement_boxes
+from meshing.boundary_layer_tools import compute_bl_height, compute_first_layer_height
 
-def run_mesh_pipeline(meshing_session, geometry_path, settings):
-    print("Starting mesh pipeline...")
 
-    workflow = meshing_session.workflow
-    workflow.InitializeWorkflow(WorkflowType="Watertight Geometry")
-    tasks = workflow.TaskObject
+def run_mesh_pipeline(session, geometry_path, settings):
 
-    # -----------------------------
-    # Import Geometry
-    # -----------------------------
-    import_geo = tasks["Import Geometry"]
-    import_geo.Arguments.set_state({
-        "FileName": geometry_path,
-        "LengthUnit": "m"
+    tasks = session.workflow.TaskObject
+
+    # -------------------------
+    # Import geometry
+    # -------------------------
+    print("\n[Meshing] Importing geometry...")
+    imp = tasks["Import Geometry"]
+    imp.Arguments.set_state({"FileName": geometry_path, "LengthUnit": "m"})
+    imp.Execute()
+
+    # -------------------------
+    # Describe geometry
+    # -------------------------
+    tasks["Describe Geometry"].Arguments.set_state({
+        "SetupType": "The geometry consists of only fluid regions with no voids"
     })
-    import_geo.Execute()
-    print("Geometry imported.")
+    tasks["Describe Geometry"].Execute()
 
-    # -----------------------------
-    # Auto zone discovery
-    # -----------------------------
-    zone_list = meshing_session.meshing.ListNames()["face_zones"]
-    wheel_zones = [z for z in zone_list if "wheel" in z.lower()]
+    tasks["Update Boundaries"].Execute()
+    tasks["Update Regions"].Execute()
 
-    # -----------------------------
-    # Local Sizing
-    # -----------------------------
-    # Stuff
-    add_local_sizing(tasks, ["chassis"], 0.001, 0.064, 12, 1.2, "faces-and-edges")
+    # -------------------------
+    # Refinement regions
+    # -------------------------
+    print("\n[Meshing] Adding refinement regions...")
+    add_all_local_refinements(session)
 
-    # Aero
-    add_local_sizing(tasks, ["frontwing","undertray","rearwing"],
-                     0.0005, 0.008, 9, 1.2, "faces-and-edges")
+    # -------------------------
+    # Wheel refinement boxes
+    # -------------------------
+    print("\n[Meshing] Adding wheel refinement boxes...")
+    generate_wheel_refinement_boxes(session, settings)
 
-    # Wheels (auto via substring)
-    add_local_sizing(tasks, wheel_zones,
-                     0.0005, 0.032, 18, 1.2, "faces")
+    # -------------------------
+    # Boundary layer
+    # -------------------------
+    bl_height = compute_bl_height(settings)
+    y1 = compute_first_layer_height(settings)
 
-    # -----------------------------
-    # Surface Mesh
-    # -----------------------------
+    print(f"[BL] Thickness={bl_height:.6f} m, First layer={y1:.6f} m")
+
+    bl = tasks["Add Boundary Layers"]
+    bl.AddChildToTask()
+    bl.InsertCompoundChildTask()
+
+    bl_child = tasks[bl.ChildNames[-1]]
+    bl_child.Arguments.set_state({
+        "BLControlName": "BL-Auto",
+        "BoundaryZones": settings["bl_surface_zones"],
+        "NumberOfLayers": settings["bl_layers"],
+        "FirstLayerHeight": y1,
+        "GrowthRate": settings["bl_growth"]
+    })
+    bl.Execute()
+
+    # -------------------------
+    # Surface mesh
+    # -------------------------
+    print("\n[Meshing] Generating surface mesh...")
     surf = tasks["Generate the Surface Mesh"]
     surf.Arguments.set_state({
-        "MinimumSize": 0.002,
-        "MaximumSize": 0.256,
-        "GrowthRate": 1.19999,
-        "SizeFunctions": "Curvature & Proximity",
-        "CurvatureNormalAngle": 18,
-        "CellsPerGap": 1,
-        "ScopeProximityTo": "faces-and-edges",
-        "DrawSizeBoxes": True,
-        "SeparateBoundaryZonesByAngle": "No",
+        "CFDSurfaceMeshControls": {
+            "MinSize": settings["surf_min_size"],
+            "MaxSize": settings["surf_max_size"],
+            "CurvatureNormalAngle": settings["surf_curvature_angle"],
+            "GrowthRate": settings["surf_growth"],
+            "CellsPerGap": settings["surf_cells_per_gap"],
+        }
     })
-    surf.UpdateChildTasks()
     surf.Execute()
-    print("Surface mesh complete.")
 
-    # Surface improvement
+    # Surface improve
     imp_surf = tasks["Improve Surface Mesh"]
     imp_surf.AddChildToTask()
     imp_surf.InsertCompoundChildTask()
-    child = tasks[imp_surf.ChildNames[-1]]
-    child.Arguments.set_state({"FaceQualityLimit": 0.7})
+    c = tasks[imp_surf.ChildNames[-1]]
+    c.Arguments.set_state({"FaceQualityLimit": 0.7})
     imp_surf.Execute()
-    print("Surface mesh improved.")
 
-    # -----------------------------
-    # BL Creation
-    # -----------------------------
-    BL_regions = {
-        "BL_wheels": wheel_zones,
-        "BL_undertray": ["undertray"],
-        "BL_wings": ["frontwing", "rearwing"],
-        "BL_chassis": ["chassis"],
-    }
-    for name, zones in BL_regions.items():
-        create_BL_control(tasks, name, zones, 10, 10.0)
+    # -------------------------
+    # Volume mesh
+    # -------------------------
+    print("\n[Meshing] Volume mesh (Hexcore)...")
+    vol = tasks["Generate the Volume Mesh"]
+    vol.Arguments.set_state({
+        "FillWith": "poly-hexcore",
+        "PeelLayers": 1,
+        "MinCellLength": settings["min_cell_length"],
+        "MaxCellLength": settings["max_cell_length"],
+    })
+    vol.Execute()
 
-    # -----------------------------
-    # Hexcore
-    # -----------------------------
-    generate_hexcore(tasks)
+    # Improve volume mesh
+    imp_vol = tasks["Improve Volume Mesh"]
+    imp_vol.AddChildToTask()
+    imp_vol.InsertCompoundChildTask()
+    vc = tasks[imp_vol.ChildNames[-1]]
+    vc.Arguments.set_state({
+        "QualityMethod": "Orthogonal",
+        "CellQualityLimit": 0.2,
+        "UseAdditionalCriteria": False
+    })
+    imp_vol.Execute()
 
-    print("Meshing pipeline complete.")
+    print("\n[Meshing] Pipeline complete.")

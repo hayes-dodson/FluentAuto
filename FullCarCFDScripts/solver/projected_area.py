@@ -1,19 +1,17 @@
 def compute_projected_area(session, settings):
-    """
-    Computes projected frontal area for half-car and returns full-car value.
-    Uses Fluent surface integral with minimum feature size.
-    """
-    zones = settings["projected_area_zones"]
-    min_len = settings["min_feature_size"]
+    ri = session.post.ReportsSurfaceIntegrals
 
-    rep = session.post.ReportsSurfaceIntegrals
-    rep["proj_area"] = {
+    ri["proj"] = {
         "report_type": "projected-area",
-        "direction": [1, 0, 0],   # frontal direction (+X)
-        "zones": zones,
-        "min_length": min_len
+        "direction": [1, 0, 0],
+        "zones": settings["projected_area_zones"],
+        "min_length": settings["min_feature_size"]
     }
 
-    A_half = rep["proj_area"].Compute()
+    A_half = ri["proj"].Compute()
     A_full = 2 * A_half
+
+    print(f"[Area] Half area = {A_half}")
+    print(f"[Area] Full area = {A_full}")
+
     return A_full

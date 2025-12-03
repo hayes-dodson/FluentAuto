@@ -1,30 +1,64 @@
+from config.wheel_centers import WHEEL_CENTERS
+
 def apply_boundary_conditions(session, settings):
-    inlet_vel = settings["final_inlet_velocity_mph"]
-    wheel_speed = settings["wheel_rotational_speed_rad_s"]
-    wheel_zones = settings["wheel_zone_names"]
+    vel = settings["inlet_velocity_mph"] * 0.44704
 
+    bc = session.solver.BoundaryConditions
+
+    # ------------------------
     # Inlet
-    bc = session.solver.BoundaryConditions["inlet"]
-    bc.velocity = inlet_vel
-    print("Inlet set to", inlet_vel, "mph")
+    # ------------------------
+    if "inlet" in bc:
+        bc["inlet"].type = "velocity-inlet"
+        bc["inlet"].vmag = vel
+        bc["inlet"].turb_intensity = 0.05
+        bc["inlet"].length_scale = 0.1
+        print(f"[BC] Inlet velocity: {vel} m/s")
 
-    # Ground
-    ground = session.solver.BoundaryConditions["ground"]
-    ground.type = "moving-wall"
-    ground.motion = {
-        "motion_type": "translational",
-        "speed": inlet_vel,
-        "direction": [1, 0, 0]
-    }
-    print("Ground plane moving at", inlet_vel, "mph")
+    # ------------------------
+    # Ground (moving wall)
+    # ------------------------
+    if "ground" in bc:
+        bc["ground"].type = "moving-wall"
+        bc["ground"].vmag = vel
+        bc["ground"].direction = [1, 0, 0]
+        print("[BC] Ground moving at inlet velocity")
 
-    # Wheels
-    for wz in wheel_zones:
-        w = session.solver.BoundaryConditions[wz]
-        w.type = "moving-wall"
-        w.motion = {
+    # ------------------------
+    # Symmetry plane
+    # ------------------------
+    if "symmetry" in bc:
+        bc["symmetry"].type = "symmetry"
+        print("[BC] Symmetry plane applied")
+
+    # ------------------------
+    # Pressure outlet
+    # ------------------------
+    if "outlet" in bc:
+        bc["outlet"].type = "pressure-outlet"
+        bc["outlet"].gauge_pressure = 0
+        print("[BC] Pressure outlet")
+
+
+def apply_wheel_motion(session, settings):
+    speed = settings["wheel_rotational_speed"]
+
+    bc = session.solver.BoundaryConditions
+
+    for zone, origin in WHEEL_CENTERS.items():
+
+        if zone not in bc:
+            print(f"[Wheel] Zone '{zone}' not found — skipping")
+            continue
+
+        bc_zone = bc[zone]
+        bc_zone.type = "moving-wall"
+
+        bc_zone.motion = {
             "motion_type": "rotational",
-            "spin_rate": wheel_speed,
-            "axis_direction": [0,1,0],
+            "axis_origin": origin,
+            "axis_direction": [0, 1, 0],
+            "spin_rate": speed
         }
-        print(f"Wheel {wz} spinning at {wheel_speed} rad/s")
+
+        print(f"[Wheel] {zone}: spin={speed} rad/s at {origin}")

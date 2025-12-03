@@ -1,9 +1,9 @@
-from ..meshing.utils_detect_zones import detect_enclosure_zone
+def set_reference_values(session, settings):
+    ref = session.solver.Settings.ReferenceValues
 
-def set_reference_values(session):
-    enclosure = detect_enclosure_zone(session)
-    rv = session.solver.Settings.ReferenceValues
+    ref.area = 1.0
+    ref.length = settings["wheelbase"]
+    ref.density = settings["air_density"]
+    ref.velocity = settings["inlet_velocity_mph"] * 0.44704
 
-    rv.ReferenceZone = enclosure
-    rv.ComputeFrom = "inlet"
-    print("Reference values computed from inlet.")
+    print("[Ref] Reference values updated.")

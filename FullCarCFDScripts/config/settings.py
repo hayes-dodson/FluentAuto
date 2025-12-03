@@ -1,56 +1,70 @@
 SETTINGS = {
 
-    # ------------------------------
-    # Geometry Inputs
-    # ------------------------------
-    "geometry_root_dir": "C:/FSAE/Geometries/",   # folder containing all geometry files
-    "geometry_extension": ".step",                # or .igs, .x_t, .parasolid, .stp
+    # =============================
+    # GEOMETRY
+    # =============================
+    "geometry_path": "",
+    "geometry_root_dir": "C:/FSAE/Geometries/",
+    "geometry_extension": ".step",
 
-    # ------------------------------
-    # Car Physical Settings
-    # ------------------------------
-    "final_inlet_velocity_mph": 40,
-    "air_density": 1.225,                 # kg/m^3
-    "wheel_rotational_speed_rad_s": 88,   # from 8 in radius at 40 mph
+    # =============================
+    # PHYSICS & CAR PARAMETERS
+    # =============================
+    "air_density": 1.225,
+    "inlet_velocity_mph": 40,
+    "wheel_rotational_speed": 88.0,   # rad/s
+    "wheelbase": 1.5748,
+    "tire_diameter": 0.4064,
 
-    # half car geometry
-    "wheelbase_m": 1.5748,                # 62 inches
-    "tire_diameter_m": 0.4064,            # 16 inches
+    # =============================
+    # MESHING: SURFACE
+    # =============================
+    "surf_min_size": 0.002,
+    "surf_max_size": 0.256,
+    "surf_growth": 1.19999,
+    "surf_curvature_angle": 18,
+    "surf_cells_per_gap": 1,
 
-    # wheel + wheel block zones
-    "wheel_zone_names": ["fw", "rw", "fwb", "rwb"],
-
-    # ------------------------------
-    # Meshing Settings
-    # ------------------------------
-    "target_y_plus": 1,
+    # =============================
+    # MESHING: BL LAYERS
+    # =============================
     "bl_layers": 10,
     "bl_growth": 1.2,
+    "target_yplus": 1,
+    "bl_surface_zones": [
+        "chassis", "frontwing", "rearwing", "undertray",
+        "fw", "fwb", "rw", "rwb"
+    ],
 
-    # ------------------------------
-    # Refinement Boxes
-    # ------------------------------
-    "ref_box_padding_m": 0.05,
+    # =============================
+    # MESHING: VOLUME (HEXCORE)
+    # =============================
+    "min_cell_length": 0.0005,
+    "max_cell_length": 0.256,
 
-    # ------------------------------
-    # Solver Settings
-    # ------------------------------
-    "precision": "double",
-    "max_final_iterations": 2000,
-    "floating_point_recovery_iterations": 200,
+    # =============================
+    # REFINEMENT BOXES
+    # =============================
+    "refinement_padding": 0.05,   # 5 cm padding around wheel box
 
-    # ------------------------------
-    # Batch Runner
-    # ------------------------------
-    "batch_size": 50,
-    "output_root": "C:/FSAE/Results/",
-
-    # ------------------------------
-    # Projected Area Calc
-    # ------------------------------
-    "min_feature_size": 0.0001,   # 0.1 mm
+    # =============================
+    # PROJECTED AREA CALC
+    # =============================
     "projected_area_zones": [
         "frontwing", "rearwing", "undertray", "chassis",
         "fw", "fwb", "rw", "rwb"
-    ]
+    ],
+    "min_feature_size": 0.0001,
+
+    # =============================
+    # SOLVER SETTINGS
+    # =============================
+    "max_iterations": 2000,
+    "floating_point_recovery_iterations": 300,
+
+    # =============================
+    # BATCH
+    # =============================
+    "output_root": "C:/FSAE/Results/",
+    "batch_size": 50
 }
