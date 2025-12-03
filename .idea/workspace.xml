@@ -5,17 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.0.1">
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/config/wheel_centers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/boundary_layer_tools.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/local_refinement_regions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/mesh_quality.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/yp_report.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/FullCarCFDScripts/config/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/FullCarCFDScripts/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/meshing/hexcore.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/meshing/mesh_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/FullCarCFDScripts/meshing/mesh_pipeline.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/solver/boundary_layer_tools.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/post/mesh_quality.py" beforeDir="false" afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/mesh_quality.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FullCarCFDScripts/post/yp_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/FullCarCFDScripts/post/yp_report.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,7 +85,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764759042476</updated>
-      <workItem from="1764759616143" duration="7874000" />
+      <workItem from="1764759616143" duration="8175000" />
     </task>
     <task id="LOCAL-00001" summary="InitialCommit">
       <option name="closed" value="true" />
@@ -152,7 +143,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764766968804</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1764767753263</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1764767753263</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
