@@ -1,7 +1,7 @@
-import time
-from meshing.local_refinement_regions import add_all_local_refinements
-from meshing.refinement_boxes import generate_wheel_refinement_boxes
-from meshing.boundary_layer_tools import compute_bl_height, compute_first_layer_height
+from .local_refinement_regions import add_all_local_refinements
+from .refinement_boxes import generate_wheel_refinement_boxes
+from .boundary_layer_tools import compute_bl_height, compute_first_layer_height
+
 
 
 def run_mesh_pipeline(session, geometry_path, settings):

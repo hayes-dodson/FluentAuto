@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.0.1">
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/batch/batch_runner.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FullCarCFDScripts/batch/excel_writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Uncommitted_changes_before_Update_at_12_3_2025_4_31_AM_[Changes].patch" beforeDir="false" afterPath="$PROJECT_DIR$/backup/Uncommitted_changes_before_Update_at_12_3_2025_4_31_AM_[Changes].patch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Uncommitted_changes_before_Update_at_12_3_2025_6_02_AM_[Changes].patch" beforeDir="false" afterPath="$PROJECT_DIR$/backup/Uncommitted_changes_before_Update_at_12_3_2025_6_02_AM_[Changes].patch" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,7 +85,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764759042476</updated>
-      <workItem from="1764759616143" duration="8520000" />
+      <workItem from="1764759616143" duration="8963000" />
     </task>
     <task id="LOCAL-00001" summary="InitialCommit">
       <option name="closed" value="true" />
@@ -159,7 +159,31 @@
       <option name="project" value="LOCAL" />
       <updated>1764767898996</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1764768203944</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1764768203944</updated>
+    </task>
+    <task id="LOCAL-00011" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1764768213816</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1764768213816</updated>
+    </task>
+    <task id="LOCAL-00012" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1764768272980</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1764768272980</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
