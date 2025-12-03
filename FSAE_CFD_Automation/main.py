@@ -1,5 +1,9 @@
 import os
 import ansys.fluent.core as pyfluent
+import argparse
+import glob
+import time
+from tkinter import Tk, filedialog
 
 from config.settings import SETTINGS
 
@@ -198,17 +202,52 @@ def run_case(geometry_path: str, output_dir: str, global_summary_csv: str | None
 # ========================================================================
 
 def main():
-    geom = SETTINGS["geometry_path"]
+    parser = argparse.ArgumentParser(
+        description="FSAE CFD Automation – Single Case Runner"
+    )
 
-    if not geom:
-        print("Error: SETTINGS['geometry_path'] is empty.\n"
-              "Set a geometry file path in config/settings.py.")
-        return
+    parser.add_argument(
+        "--geom", "-g",
+        type=str,
+        default=None,
+        help="Path to geometry file (.step, .iges, .x_t, etc.)"
+    )
 
-    output_dir = SETTINGS["output_root"]
+    parser.add_argument(
+        "--out", "-o",
+        type=str,
+        default=None,
+        help="Output directory for results"
+    )
+
+    args = parser.parse_args()
+
+    # Determine geometry path (CLI overrides settings)
+    if args.geom is not None:
+        geometry_path = args.geom
+        print(f"[CLI] Using geometry from command line: {geometry_path}")
+    else:
+        geometry_path = SETTINGS["geometry_path"]
+        if not geometry_path:
+            print("ERROR: No geometry specified. Use --geom or fill geometry_path in settings.")
+            return
+
+    # Determine output directory (CLI overrides settings)
+    if args.out is not None:
+        output_dir = args.out
+        print(f"[CLI] Using output directory from command line: {output_dir}")
+    else:
+        output_dir = SETTINGS["output_root"]
+
     os.makedirs(output_dir, exist_ok=True)
 
-    run_case(geometry_path=geom, output_dir=output_dir, global_summary_csv=None)
+    # Run full CFD case
+    run_case(
+        geometry_path=geometry_path,
+        output_dir=output_dir,
+        global_summary_csv=None
+    )
+
 
 
 if __name__ == "__main__":
