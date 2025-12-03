@@ -196,6 +196,8 @@ def run_case(geometry_path: str, output_dir: str, global_summary_csv: str | None
     print("          PIPELINE COMPLETE")
     print("========================================\n")
 
+    return solver
+
 
 # ========================================================================
 #                      MAIN ENTRYPOINT (single case)
@@ -203,51 +205,172 @@ def run_case(geometry_path: str, output_dir: str, global_summary_csv: str | None
 
 def main():
     parser = argparse.ArgumentParser(
-        description="FSAE CFD Automation – Single Case Runner"
+        description="FSAE CFD Automation — Single Case / Batch Runner"
     )
 
+    # -------------------------
+    # INPUT OVERRIDES
+    # -------------------------
     parser.add_argument(
         "--geom", "-g",
         type=str,
         default=None,
-        help="Path to geometry file (.step, .iges, .x_t, etc.)"
+        help="Path to a single geometry file (STEP/IGES/Parasolid/etc)."
     )
 
     parser.add_argument(
         "--out", "-o",
         type=str,
         default=None,
-        help="Output directory for results"
+        help="Output directory for results."
+    )
+
+    # -------------------------
+    # BATCH MODE
+    # -------------------------
+    parser.add_argument(
+        "--batch-folder", "-bf",
+        type=str,
+        default=None,
+        help="Folder containing multiple geometry files for batch processing."
+    )
+
+    # -------------------------
+    # RESUME MODE
+    # -------------------------
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume a crashed simulation from case/data files if available."
+    )
+
+    # -------------------------
+    # INTERACTIVE LIVE DISPLAY
+    # -------------------------
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Show residuals and ETA live while solver is running."
     )
 
     args = parser.parse_args()
 
-    # Determine geometry path (CLI overrides settings)
-    if args.geom is not None:
-        geometry_path = args.geom
-        print(f"[CLI] Using geometry from command line: {geometry_path}")
-    else:
-        geometry_path = SETTINGS["geometry_path"]
-        if not geometry_path:
-            print("ERROR: No geometry specified. Use --geom or fill geometry_path in settings.")
+    # -------------------------
+    # BATCH MODE HANDLER
+    # -------------------------
+    if args.batch_folder is not None:
+        folder = args.batch_folder
+        if not os.path.isdir(folder):
+            print(f"[ERROR] Batch folder does not exist: {folder}")
             return
 
-    # Determine output directory (CLI overrides settings)
+        geoms = glob.glob(os.path.join(folder, "*.step")) + \
+                glob.glob(os.path.join(folder, "*.iges")) + \
+                glob.glob(os.path.join(folder, "*.stp"))
+
+        if not geoms:
+            print("[Batch] No geometry files found in folder.")
+            return
+
+        print(f"[Batch] Found {len(geoms)} geometries.")
+        for geom in geoms:
+            name = os.path.splitext(os.path.basename(geom))[0]
+            out_dir = os.path.join(folder, "_results", name)
+            os.makedirs(out_dir, exist_ok=True)
+
+            print(f"\n[BATCH RUN] Geometry: {geom}")
+            run_case(
+                geometry_path=geom,
+                output_dir=out_dir,
+                global_summary_csv=os.path.join(folder, "_results", "batch_summary.csv")
+            )
+        return
+
+    # -------------------------
+    # NORMAL SINGLE-CASE MODE
+    # -------------------------
+
+    # 1. Determine geometry path
+    if args.geom is not None:
+        geom_path = args.geom
+        print(f"[CLI] Using geometry: {geom_path}")
+
+    else:
+        # If settings file has a path, use it
+        if SETTINGS["geometry_path"]:
+            geom_path = SETTINGS["geometry_path"]
+            print(f"[Settings] Using geometry: {geom_path}")
+        else:
+            print("[Prompt] No geometry provided. Opening file picker...")
+            geom_path = filedialog.askopenfilename(
+                title="Select Geometry File",
+                filetypes=[
+                    ("CAD files", "*.step *.stp *.iges *.igs *.x_t *.x_b"),
+                    ("All files", "*.*")
+                ]
+            )
+            if not geom_path:
+                print("[ERROR] No geometry selected.")
+                return
+
+    # 2. Determine output directory
     if args.out is not None:
         output_dir = args.out
-        print(f"[CLI] Using output directory from command line: {output_dir}")
+        print(f"[CLI] Output directory: {output_dir}")
     else:
         output_dir = SETTINGS["output_root"]
 
     os.makedirs(output_dir, exist_ok=True)
 
-    # Run full CFD case
-    run_case(
-        geometry_path=geometry_path,
+    # -------------------------
+    # RESUME MODE
+    # -------------------------
+    if args.resume:
+        casefile = os.path.join(output_dir, "final.cas.h5")
+        datafile = os.path.join(output_dir, "final.dat.h5")
+
+        if os.path.exists(casefile) and os.path.exists(datafile):
+            print("[Resume] Restarting from previous case/data files.")
+            solver = pyfluent.launch_fluent(
+                mode=pyfluent.FluentMode.SOLVER,
+                precision=pyfluent.Precision.DOUBLE,
+                processor_count=60,
+                dimension=3
+            )
+            solver.solver.File.Read(file_type="case", file_name=casefile)
+            solver.solver.File.Read(file_type="data", file_name=datafile)
+
+            # Continue solving
+            print("[Resume] Continuing for 400 more iterations...")
+            solver.solution.RunCalculation.iterate(400)
+
+            return
+        else:
+            print("[Resume] No restart files found. Running fresh simulation.")
+
+    # -------------------------
+    # RUN THE CFD CASE
+    # -------------------------
+    solver = run_case(
+        geometry_path=geom_path,
         output_dir=output_dir,
         global_summary_csv=None
     )
 
+    # -------------------------
+    # LIVE INTERACTION MODE
+    # (This simply shows solver progress)
+    # -------------------------
+    if args.live and solver is not None:
+        print("[LIVE] Tracking residuals...")
+        try:
+            while True:
+                res = solver.solution.Monitors.Residual.GetValues()
+                print(f"[LIVE] continuity={res['continuity']:.3e}  "
+                      f"mom-x={res['x-momentum']:.3e}")
+                time.sleep(1.5)
+        except KeyboardInterrupt:
+            print("\n[LIVE] Stopped monitoring.")
 
 
 if __name__ == "__main__":
