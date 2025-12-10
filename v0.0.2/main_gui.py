@@ -4,6 +4,7 @@
 
 import sys
 import os
+
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
@@ -12,19 +13,45 @@ from pipelines import (
     FrontWingPipeline,
     RearWingPipeline,
     UndertrayPipeline,
-    HalfCarPipeline
+    HalfCarPipeline,
 )
 
 
 class MainWindow(QtWidgets.QWidget):
+    """
+    Main application window for the CFD automation suite.
+    """
 
     def __init__(self):
         super().__init__()
 
+        # --------------------------
+        # Declare all attributes here
+        # --------------------------
+        self.geom_path: QtWidgets.QLineEdit = None
+        self.out_path: QtWidgets.QLineEdit = None
+        self.sim_name: QtWidgets.QLineEdit = None
+
+        self.L_field: QtWidgets.QLineEdit = None
+        self.W_field: QtWidgets.QLineEdit = None
+        self.H_field: QtWidgets.QLineEdit = None
+
+        self.btn_fw: QtWidgets.QPushButton = None
+        self.btn_rw: QtWidgets.QPushButton = None
+        self.btn_ut: QtWidgets.QPushButton = None
+        self.btn_hc: QtWidgets.QPushButton = None
+
+        self.log_box: QtWidgets.QTextEdit = None
+        self.queue_list: QtWidgets.QListWidget = None
+
+        # Backend simulation manager
+        self.manager = SimulationManager()
+
+        # Window setup
         self.setWindowTitle("Ram Racing FSAE Aero Automation Suite")
         self.setGeometry(200, 200, 850, 600)
 
-        self.manager = SimulationManager()
+        # Build GUI
         self.init_ui()
 
     # ============================================================
@@ -32,12 +59,11 @@ class MainWindow(QtWidgets.QWidget):
     # ============================================================
     def init_ui(self):
         layout = QtWidgets.QVBoxLayout()
-
-        # --------------------------
-        # SECTION: Input fields
-        # --------------------------
         form = QtWidgets.QFormLayout()
 
+        # --------------------------
+        # Input fields
+        # --------------------------
         self.geom_path = QtWidgets.QLineEdit()
         self.out_path = QtWidgets.QLineEdit()
         self.sim_name = QtWidgets.QLineEdit()
@@ -58,7 +84,6 @@ class MainWindow(QtWidgets.QWidget):
         form.addRow("", browse_out)
         form.addRow("Simulation Name:", self.sim_name)
 
-        # L, W, H required for enclosure sizing
         form.addRow("Length (L):", self.L_field)
         form.addRow("Width (W):", self.W_field)
         form.addRow("Height (H):", self.H_field)
@@ -66,7 +91,7 @@ class MainWindow(QtWidgets.QWidget):
         layout.addLayout(form)
 
         # --------------------------
-        # SECTION: Pipeline Buttons
+        # Pipeline buttons
         # --------------------------
         btn_layout = QtWidgets.QHBoxLayout()
 
@@ -88,7 +113,7 @@ class MainWindow(QtWidgets.QWidget):
         layout.addLayout(btn_layout)
 
         # --------------------------
-        # SECTION: Queue controls
+        # Queue controls
         # --------------------------
         queue_controls = QtWidgets.QHBoxLayout()
 
@@ -104,14 +129,14 @@ class MainWindow(QtWidgets.QWidget):
         layout.addLayout(queue_controls)
 
         # --------------------------
-        # SECTION: Log Window
+        # Log window
         # --------------------------
         self.log_box = QtWidgets.QTextEdit()
         self.log_box.setReadOnly(True)
         layout.addWidget(self.log_box)
 
         # --------------------------
-        # SECTION: Queue Display
+        # Queue display
         # --------------------------
         self.queue_list = QtWidgets.QListWidget()
         layout.addWidget(self.queue_list)
@@ -122,17 +147,24 @@ class MainWindow(QtWidgets.QWidget):
     # Handlers
     # ============================================================
     def browse_geometry(self):
-        fname, _ = QFileDialog.getOpenFileName(self, "Select Geometry File", "", "CAD Files (*.stp *.step *.igs *.iges)")
+        fname, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Geometry File",
+            "",
+            "CAD Files (*.stp *.step *.igs *.iges)"
+        )
         if fname:
             self.geom_path.setText(fname)
 
     def browse_output(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            "Select Output Folder"
+        )
         if folder:
             self.out_path.setText(folder)
 
-    def add_job(self, pipeline_name):
-        """User clicked one of the simulation buttons."""
+    def add_job(self, pipeline_name: str):
         job = self.build_job(pipeline_name)
         if job:
             self.manager.add_job(job)
@@ -142,61 +174,50 @@ class MainWindow(QtWidgets.QWidget):
         QMessageBox.information(self, "Queue", "Simulation added to queue. Press 'Start Queue' to run.")
 
     def start_queue(self):
-        """Executes entire queue sequentially."""
         self.log("Starting simulation queue...")
         self.manager.set_log_callback(self.log)
         self.manager.run_all()
         self.log("Queue finished.")
 
-    def build_job(self, sim_type):
-        """Build a job dictionary with all needed parameters."""
-
+    def build_job(self, sim_type: str):
         geom = self.geom_path.text().strip()
         outdir = self.out_path.text().strip()
         name = self.sim_name.text().strip()
 
         if not geom or not os.path.exists(geom):
-            self.error("Geometry file invalid.")
-            return None
+            return self.error("Geometry file invalid.")
 
         if not outdir or not os.path.exists(outdir):
-            self.error("Output folder invalid.")
-            return None
+            return self.error("Output folder invalid.")
 
         if not name:
-            self.error("Simulation name required.")
-            return None
+            return self.error("Simulation name required.")
 
         try:
             L = float(self.L_field.text())
             W = float(self.W_field.text())
             H = float(self.H_field.text())
-        except:
-            self.error("L, W, H must be numeric.")
-            return None
+        except ValueError:
+            return self.error("L, W, H must be numeric.")
 
-        # Select correct pipeline class
-        if sim_type == "fw":
-            pipeline_class = FrontWingPipeline
-        elif sim_type == "rw":
-            pipeline_class = RearWingPipeline
-        elif sim_type == "ut":
-            pipeline_class = UndertrayPipeline
-        elif sim_type == "hc":
-            pipeline_class = HalfCarPipeline
-        else:
-            self.error("Unknown simulation type.")
-            return None
+        pipeline_map = {
+            "fw": FrontWingPipeline,
+            "rw": RearWingPipeline,
+            "ut": UndertrayPipeline,
+            "hc": HalfCarPipeline,
+        }
 
-        # Job dictionary for SimulationManager
+        if sim_type not in pipeline_map:
+            return self.error("Unknown simulation type.")
+
         job = {
-            "pipeline_class": pipeline_class,
+            "pipeline_class": pipeline_map[sim_type],
             "geom": geom,
             "outdir": os.path.join(outdir, name),
             "sim_name": name,
             "L": L,
             "W": W,
-            "H": H
+            "H": H,
         }
 
         return job
@@ -204,13 +225,16 @@ class MainWindow(QtWidgets.QWidget):
     # ============================================================
     # Logging utilities
     # ============================================================
-    def log(self, msg):
+    def log(self, msg: str):
         self.log_box.append(msg)
-        self.log_box.verticalScrollBar().setValue(self.log_box.verticalScrollBar().maximum())
+        self.log_box.verticalScrollBar().setValue(
+            self.log_box.verticalScrollBar().maximum()
+        )
 
-    def error(self, msg):
+    def error(self, msg: str):
         QMessageBox.critical(self, "Error", msg)
         self.log(f"ERROR: {msg}")
+        return None
 
 
 # ======================================================================
