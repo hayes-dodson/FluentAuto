@@ -596,3 +596,80 @@ def run_solver(mesh_path, outdir):
     print_header("SOLVER COMPLETE — REAR WING FINISHED")
     return cd, cl, scx, scz
 
+###########################################################
+# ---- MAIN WORKFLOW (REAR WING) ----
+###########################################################
+
+def main():
+    print_header("FSAE REAR WING CFD — FULL AUTOMATION")
+
+    # ------------------------------------------
+    # USER INPUT
+    # ------------------------------------------
+    geom_path, sim_name, outdir, L, W, H = ask_user_inputs()
+
+    # ------------------------------------------
+    # START MESHER
+    # ------------------------------------------
+    print_header("LAUNCHING FLUENT MESHING SESSION")
+
+    meshing_session = pyfluent.launch_fluent(
+        mode=pyfluent.FluentMode.MESHING,
+        precision=pyfluent.Precision.DOUBLE,
+        processor_count=16,
+        dimension=3,
+        mpi_type="intel",
+    )
+    wait()
+
+    # ------------------------------------------
+    # RUN MESHING PIPELINE
+    # ------------------------------------------
+    print_header("RUNNING REAR WING MESHING PIPELINE")
+
+    mesh_file = run_meshing(
+        session=meshing_session,
+        geom_path=geom_path,
+        outdir=outdir,
+        L=L, W=W, H=H
+    )
+
+    print_header("MESHING COMPLETE — MOVING TO SOLVER")
+
+
+    # ------------------------------------------
+    # SOLVER PIPELINE
+    # ------------------------------------------
+    cd, cl, scx, scz = run_solver(
+        mesh_path=mesh_file,
+        outdir=outdir
+    )
+
+
+    # ------------------------------------------
+    # SUMMARY OUTPUT
+    # ------------------------------------------
+    print_header("REAR WING CFD — SUMMARY")
+
+    print(f"Simulation Name:   {sim_name}")
+    print(f"Geometry Used:     {geom_path}")
+    print(f"Output Folder:     {outdir}\n")
+
+    print("AERODYNAMIC RESULTS (REAR WING):")
+    print(f"   Cd  = {cd}")
+    print(f"   Cl  = {cl}")
+    print(f"   SCx = {scx}")
+    print(f"   SCz = {scz}\n")
+
+    print("===============================================")
+    print("     REAR WING SIMULATION COMPLETE ✔")
+    print("===============================================\n")
+
+
+
+###########################################################
+# ---- ENTRY POINT ----
+###########################################################
+
+if __name__ == "__main__":
+    main()
