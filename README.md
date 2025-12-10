@@ -1,208 +1,125 @@
-# FSAE Aerodynamics — Automated CFD Pipeline (ANSYS Fluent 2025R2)
-
-### Fully Automated Meshing + Solver Execution for Front Wing, Rear Wing, and Undertray Systems  
-#### Built for ANSYS Fluent 2025R2 with Python 3.12 / PyFluent
-
----
-
-## ⭐ Overview
-
-This repository contains **three fully automated CFD pipelines** for performing aerodynamic analysis on FSAE vehicle components:
-
-- **Front Wing (`fsae_frontwing.py`)**  
-- **Rear Wing (`fsae_rearwing.py`)**  
-- **Undertray + Wheels + Bargeboards (`fsae_undertray.py`)**
-
-Each script:
-
-- Uses **Fluent Watertight Geometry workflow** for meshing  
-- Applies **consistent refinement and BL strategies** across all tests  
-- Runs **GEKO turbulence modeling** with curvature correction  
-- Automatically handles **ramp-up stability** to avoid floating-point errors  
-- Computes **Cd, Cl, SCx, SCz**, projected area, mesh statistics  
-- Saves **case/data, contours, and postprocessing outputs**  
-- Is designed for **batch EXE execution** or standalone manual use  
-
-The pipeline ensures **repeatability, robustness, and consistent physics** for all aero simulations.
+# Ram Racing FSAE Aero Automation Suite
+Professional CFD Automation Framework for Ansys Fluent 2025R2  
+Developed for high-performance aerodynamic evaluation and rapid iteration in Formula SAE applications.
 
 ---
 
-## 📁 Repository Structure
+## Overview
+The **Ram Racing FSAE Aero Automation Suite** is a fully automated, GUI-based system designed to accelerate aerodynamic simulation workflows in **Ansys Fluent 2025R2**.  
+It provides end-to-end automation for:
 
-```
-/ (root)
-│
-├── fsae_frontwing.py        # Automated CFD simulation for front wing
-├── fsae_rearwing.py         # Automated CFD simulation for rear wing
-├── fsae_undertray.py        # Automated CFD simulation for undertray + wheels
-│
-├── README.md                # Documentation (this file)
-└── /example_output/         # (Optional) Example pictures and result files
-```
+- Geometry import
+- Meshing (Watertight Geometry Workflow)
+- Boundary layer generation
+- Automatic wheel refinement regions
+- Poly-Hexcore volume mesh creation
+- Solver setup with GEKO turbulence modeling
+- Curvature Correction ramp activation
+- Multi-stage solver convergence ramp
+- Automatic coefficient extraction (Cd, Cl, SCx, SCz)
+- Projected frontal area computation
+- Residual, pressure, and velocity post-processing
+- PDF report generation
+- Queue-based batch simulation execution
 
----
+The system includes four dedicated CFD pipelines:
+- **Front Wing**
+- **Rear Wing**
+- **Undertray**
+- **Half-Car Configuration**
 
-## ⚙️ Requirements
-
-### Software  
-- **Python 3.12**
-- **ANSYS Fluent 2025R2**  
-- **PyFluent** (included with Ansys)
-
-### Python Packages  
-
-```
-ansys-fluent-core
-```
+All pipelines share a unified architecture for reliability, consistency, and maintainability.
 
 ---
 
-## 🧠 How the Pipeline Works
+## Key Features
+### Aerodynamic Simulation Automation
+- Complete pipeline from geometry to final report
+- Zero manual Fluent interaction required
+- GEKO turbulence modeling with automated Curvature Correction activation
+- Wheel rotation and ground-moving wall setup (half-car pipeline)
+- Region-specific local curvature sizing
+- Tighter undertray meshing controls
+- Automatic detection of enclosure regions
+- Wheel refinement based on user-supplied chassis dimensions (L, W, H)
 
-Each simulation follows the same overall sequence:
+### Mesh Generation
+- Watertight Geometry workflow
+- Automated boundary layer controls (10 layers, configurable)
+- Curvature-driven local sizing
+- Auto-inserted refinement regions for wheel wakes
+- Poly-Hexcore volume meshing
+- Surface and volume mesh quality improvement passes
 
----
+### Solver Automation
+- Three ramp stages: 1000 / 1000 / 5000 iterations
+- Automatic Curvature Correction activation after ramp stage 2
+- Automatic reference value setup
+- Convergence detection based on continuity
+- Automatic solver restarts on floating-point errors (optional extension)
 
-### 1️⃣ User Input
-
-The script asks for:
-
-- Geometry file (`.step` or `.stp`)
-- Simulation name  
-- Vehicle bounding box dimensions:
-  - `L` (length)
-  - `W` (width)
-  - `H` (height)
-
-Output files are stored in a folder with the simulation name.
-
----
-
-### 2️⃣ Meshing Pipeline (Watertight Geometry)
-
-All scripts use the same meshing philosophy:
-
-#### ✔ Global refinement regions
-- Near-field  
-- Mid-field  
-- Far-field  
-
-#### ✔ Curvature-based local sizing  
-Per component:
-- Front Wing  
-- Rear Wing  
-- Undertray  
-- Wheels  
-- Wheel blocks  
-- Bargeboard  
-
-#### ✔ Wheel refinement regions  
-Includes:
-- Cylindrical refinement  
-- Front refinement box  
-- Wake refinement box  
-
-#### ✔ Surface mesh + improvement  
-#### ✔ Boundary layers  
-#### ✔ Poly-Hexcore volume mesh  
+### Output Automation
+Each simulation produces:
+- Case/Data files (`.h5`)
+- Pressure and velocity contour images
+- Residual plots
+- Coefficient CSV (Cd, Cl, SCx, SCz)
+- Frontal area
+- Mesh metrics (optional)
+- Full PDF report
 
 ---
 
-### 3️⃣ Solver Pipeline
+## Cross-Platform Support
+The automation suite runs on **Windows** (recommended) and **Linux** systems.
 
-Includes:
-
-- Unit Setup (mph, lbf)
-- GEKO turbulence  
-- Wheel rotation (Undertray only)
-- Ramp algorithm: **1000 → 1000 → 5000 iterations**
-- Curvature correction ON in final ramp  
-- Convergence on continuity < **1e−4**  
-- Aero extraction  
+- Windows: supports PyInstaller `.exe` packaging  
+- Linux: supports standalone binary generation via PyInstaller  
+- Fluent must be installed on the target system  
+- Environment variables must be configured correctly (see `ENVIRONMENT.md`)
 
 ---
 
-### 4️⃣ Output Files
+## Project Components
+# Graphical interface
+main_gui.py 
+# Sequential queue execution controller
+simulation_manager.py 
+# Pipeline selector and wrapper
+pipelines.py 
 
-Each run exports:
+# Front wing CFD pipeline
+frontwing_pipeline.py 
+# Rear wing CFD pipeline
+rearwing_pipeline.py 
+# Undertray CFD pipeline
+undertray_pipeline.py 
+# Half-car CFD pipeline
+halfcar_pipeline.py 
 
-```
-final.cas.h5
-final.dat.h5
-pressure.png
-velocity.png
-projected_area.txt
-aero_coeffs.txt
-```
-
----
-
-## 🛠 Usage
-
-Run from the terminal:
-
-```
-python fsae_frontwing.py
-python fsae_rearwing.py
-python fsae_undertray.py
-```
-
-Outputs will appear in:
-
-```
-/<sim_name>/
-```
+# PDF report builder
+report_gen.py 
 
 ---
 
-## 🧩 Component-Specific Behaviors
-
-### Front Wing  
-- No wheels  
-- BL only on front wing  
-
-### Rear Wing  
-- No wheels  
-- BL only on rear wing  
-
-### Undertray  
-- Wheels rotate at 88 rad/s  
-- Wheel blocks stationary  
-- BL on undertray, wheels, blocks, bargeboard  
+## License
+This project is licensed under the **MIT License**.  
+See `LICENSE` for details.
 
 ---
 
-## 🚀 Packaging as EXE
+## Documentation
+For full usage instructions, environment configuration guides, developer notes, and pipeline architecture, please refer to:
 
-Example:
-
-```
-pyinstaller --onefile fsae_undertray.py
-```
-
----
-
-## 🎯 Summary
-
-This repository provides:
-
-- Fully automated WT meshing  
-- Fully automated solvers  
-- Consistent meshing standards  
-- SCx / SCz calculation  
-- Projected area computation  
-- Robust stability ramp  
-- Production-ready CFD workflow  
+- `INSTALLATION.md`
+- `USAGE.md`
+- `PIPELINES.md`
+- `ENVIRONMENT.md`
+- `DEVELOPERS.md`
+- `CHANGELOG.md`
 
 ---
 
-If you'd like—
-- A **batch runner**
-- A **unified master tool**
-- GUI version  
-- Automatic y+ calculator  
-- Python logging  
-- Report generator
-
-Just ask!
+## Contact
+For questions, issues, or feature requests, please open a GitHub Issue or contact the project maintainer.
 
