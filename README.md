@@ -1,107 +1,208 @@
-# FSAE CFD Automation – Feature Overview
+# FSAE Aerodynamics — Automated CFD Pipeline (ANSYS Fluent 2025R2)
 
-A fully automated end-to-end CFD pipeline for FSAE vehicle aerodynamic development using ANSYS Fluent + PyFluent.
-Supports single-case runs, batch runs, solver stabilization, mesh automation, post-processing, and EXE distribution.
+### Fully Automated Meshing + Solver Execution for Front Wing, Rear Wing, and Undertray Systems  
+#### Built for ANSYS Fluent 2025R2 with Python 3.12 / PyFluent
 
-# ⚙️ Core Functionality
-Mesh Automation
+---
 
-Automated Fluent Meshing launch (DOUBLE precision + MPI)
+## ⭐ Overview
 
-Watertight geometry workflow
+This repository contains **three fully automated CFD pipelines** for performing aerodynamic analysis on FSAE vehicle components:
 
-Automatic geometry import
+- **Front Wing (`fsae_frontwing.py`)**  
+- **Rear Wing (`fsae_rearwing.py`)**  
+- **Undertray + Wheels + Bargeboards (`fsae_undertray.py`)**
 
-Automatic zone discovery
+Each script:
 
-Local sizing generation:
+- Uses **Fluent Watertight Geometry workflow** for meshing  
+- Applies **consistent refinement and BL strategies** across all tests  
+- Runs **GEKO turbulence modeling** with curvature correction  
+- Automatically handles **ramp-up stability** to avoid floating-point errors  
+- Computes **Cd, Cl, SCx, SCz**, projected area, mesh statistics  
+- Saves **case/data, contours, and postprocessing outputs**  
+- Is designed for **batch EXE execution** or standalone manual use  
 
-Curvature-based sizing sets (stuff, wheels, aero)
+The pipeline ensures **repeatability, robustness, and consistent physics** for all aero simulations.
 
-Multiple sizing regions with separate parameters
+---
 
-Automatic wheel refinement boxes
+## 📁 Repository Structure
 
-Global & local refinement zones:
+```
+/ (root)
+│
+├── fsae_frontwing.py        # Automated CFD simulation for front wing
+├── fsae_rearwing.py         # Automated CFD simulation for rear wing
+├── fsae_undertray.py        # Automated CFD simulation for undertray + wheels
+│
+├── README.md                # Documentation (this file)
+└── /example_output/         # (Optional) Example pictures and result files
+```
 
-Near-field, mid-field, far-field boxes
+---
 
-Wheel-region refinement
+## ⚙️ Requirements
 
-Boundary layer automation:
+### Software  
+- **Python 3.12**
+- **ANSYS Fluent 2025R2**  
+- **PyFluent** (included with Ansys)
 
-BL height computed from Reynolds number
+### Python Packages  
 
-Automatic first-layer height for y+ ≈ 1
+```
+ansys-fluent-core
+```
 
-Per-zone BL creation
+---
 
-Surface mesh generation with full UI-equivalent settings
+## 🧠 How the Pipeline Works
 
-Volume mesh generation (poly-hexcore, peel layers, min/max sizes)
+Each simulation follows the same overall sequence:
 
-Mesh improvement (surface + volume quality targets)
+---
 
-Mesh quality reporting + CSV export
+### 1️⃣ User Input
 
-# 🧮 Solver Automation
+The script asks for:
 
-Automatic Fluent Solver launch
+- Geometry file (`.step` or `.stp`)
+- Simulation name  
+- Vehicle bounding box dimensions:
+  - `L` (length)
+  - `W` (width)
+  - `H` (height)
 
-GEKO turbulence model initialization
+Output files are stored in a folder with the simulation name.
 
-Optional curvature correction (on/off logic)
+---
 
-Wheel rotation setup based on real tire radii
+### 2️⃣ Meshing Pipeline (Watertight Geometry)
 
-Automated BC assignment:
+All scripts use the same meshing philosophy:
 
-Inlet at target MPH
+#### ✔ Global refinement regions
+- Near-field  
+- Mid-field  
+- Far-field  
 
-Moving ground plane
+#### ✔ Curvature-based local sizing  
+Per component:
+- Front Wing  
+- Rear Wing  
+- Undertray  
+- Wheels  
+- Wheel blocks  
+- Bargeboard  
 
-Wheel rotation & origins (FL/FR/RL/RR)
+#### ✔ Wheel refinement regions  
+Includes:
+- Cylindrical refinement  
+- Front refinement box  
+- Wake refinement box  
 
-Automatic reference values:
+#### ✔ Surface mesh + improvement  
+#### ✔ Boundary layers  
+#### ✔ Poly-Hexcore volume mesh  
 
-Projected frontal area computation (UI-identical)
+---
 
-Automatic selection of aero-relevant surfaces
+### 3️⃣ Solver Pipeline
 
-Solver stabilization:
+Includes:
 
-Relaxation ramp
+- Unit Setup (mph, lbf)
+- GEKO turbulence  
+- Wheel rotation (Undertray only)
+- Ramp algorithm: **1000 → 1000 → 5000 iterations**
+- Curvature correction ON in final ramp  
+- Convergence on continuity < **1e−4**  
+- Aero extraction  
 
-CFL ramp
+---
 
-Floating-point / divergence auto-recovery
+### 4️⃣ Output Files
 
-Automatic re-run after crash
+Each run exports:
 
-# 📊 Aero & Physics Outputs
+```
+final.cas.h5
+final.dat.h5
+pressure.png
+velocity.png
+projected_area.txt
+aero_coeffs.txt
+```
 
-Extract Cd, Cl directly from Fluent
+---
 
-Compute aerodynamic coefficients:
+## 🛠 Usage
 
-SCx = Cd × Area
+Run from the terminal:
 
-SCz = Cl × Area
+```
+python fsae_frontwing.py
+python fsae_rearwing.py
+python fsae_undertray.py
+```
 
-Projected frontal area (full-car) computation
+Outputs will appear in:
 
-y+ statistics and summary
+```
+/<sim_name>/
+```
 
-Wall y+ contour export (PNG)
+---
 
-Pressure map export
+## 🧩 Component-Specific Behaviors
 
-Mesh quality summary (console + CSV)
+### Front Wing  
+- No wheels  
+- BL only on front wing  
 
-Full case summary CSV export per geometry
+### Rear Wing  
+- No wheels  
+- BL only on rear wing  
 
-# 📁 Batch Processing & Case Management
+### Undertray  
+- Wheels rotate at 88 rad/s  
+- Wheel blocks stationary  
+- BL on undertray, wheels, blocks, bargeboard  
 
-Run 1–100+ geometries automatically
+---
 
-Batch mode via:
+## 🚀 Packaging as EXE
+
+Example:
+
+```
+pyinstaller --onefile fsae_undertray.py
+```
+
+---
+
+## 🎯 Summary
+
+This repository provides:
+
+- Fully automated WT meshing  
+- Fully automated solvers  
+- Consistent meshing standards  
+- SCx / SCz calculation  
+- Projected area computation  
+- Robust stability ramp  
+- Production-ready CFD workflow  
+
+---
+
+If you'd like—
+- A **batch runner**
+- A **unified master tool**
+- GUI version  
+- Automatic y+ calculator  
+- Python logging  
+- Report generator
+
+Just ask!
+
