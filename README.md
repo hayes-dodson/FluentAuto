@@ -1,3 +1,5 @@
+<img width="207" height="233" alt="RR2425_LogoGreen" src="https://github.com/user-attachments/assets/0967733d-0662-43cc-ac3a-1226af33b587" />
+
 # Ram Racing FSAE Aero Automation Suite
 Professional CFD Automation Framework for Ansys Fluent 2025R2  
 Developed for high-performance aerodynamic evaluation and rapid iteration in Formula SAE applications.
