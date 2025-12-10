@@ -1,258 +1,227 @@
 # main_gui.py
 # Ram Racing FSAE Aero Automation Suite
-# PyQt6 GUI for automated CFD simulation management
+# GUI interface for running isolated and half-car CFD pipelines
 
 import sys
 import os
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QPushButton, QFileDialog,
-    QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QTabWidget,
-    QComboBox, QTextEdit, QListWidget, QProgressBar, QGroupBox,
-    QMessageBox, QFormLayout, QSplitter
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
+
+from simulation_manager import SimulationManager
+from pipelines import (
+    FrontWingPipeline,
+    RearWingPipeline,
+    UndertrayPipeline,
+    HalfCarPipeline
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QObject
-
-# Simulation Manager (import in Part 3/4)
-# from simulation_manager import SimulationManager
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QtWidgets.QWidget):
+
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Ram Racing FSAE Aero Automation Suite")
-        self.setMinimumSize(1200, 800)
+        self.setGeometry(200, 200, 850, 600)
 
-        # Central widget + tabs
-        self.tabs = QTabWidget()
-        self.setCentralWidget(self.tabs)
+        self.manager = SimulationManager()
+        self.init_ui()
 
-        # Create tabs
-        self.tab_run = QWidget()
-        self.tab_queue = QWidget()
-        self.tab_results = QWidget()
-        self.tab_logs = QWidget()
-        self.tab_settings = QWidget()
+    # ============================================================
+    # GUI Layout
+    # ============================================================
+    def init_ui(self):
+        layout = QtWidgets.QVBoxLayout()
 
-        # Add tabs
-        self.tabs.addTab(self.tab_run, "Run Simulation")
-        self.tabs.addTab(self.tab_queue, "Job Queue")
-        self.tabs.addTab(self.tab_results, "Results Viewer")
-        self.tabs.addTab(self.tab_logs, "Log Viewer")
-        self.tabs.addTab(self.tab_settings, "Settings")
+        # --------------------------
+        # SECTION: Input fields
+        # --------------------------
+        form = QtWidgets.QFormLayout()
 
-        # Build tab UIs
-        self.build_run_tab()
-        self.build_queue_tab()
-        self.build_results_tab()
-        self.build_logs_tab()
-        self.build_settings_tab()
+        self.geom_path = QtWidgets.QLineEdit()
+        self.out_path = QtWidgets.QLineEdit()
+        self.sim_name = QtWidgets.QLineEdit()
 
-        # Placeholder simulation manager
-        self.sim_manager = None  # Assigned in Part 3
+        self.L_field = QtWidgets.QLineEdit("3.1")
+        self.W_field = QtWidgets.QLineEdit("1.40462")
+        self.H_field = QtWidgets.QLineEdit("1.19507")
 
+        browse_geom = QtWidgets.QPushButton("Browse Geometry")
+        browse_geom.clicked.connect(self.browse_geometry)
 
-    # -----------------------------------------------------------
-    # TAB 1 — RUN SIMULATION
-    # -----------------------------------------------------------
-    def build_run_tab(self):
-        layout = QVBoxLayout()
+        browse_out = QtWidgets.QPushButton("Browse Output")
+        browse_out.clicked.connect(self.browse_output)
 
-        title = QLabel("Run New CFD Simulation")
-        title.setStyleSheet("font-size: 22px; font-weight: bold;")
-        layout.addWidget(title)
-
-        form = QFormLayout()
-
-        # Geometry file
-        self.geom_path = QLineEdit()
-        btn_browse_geom = QPushButton("Browse…")
-        btn_browse_geom.clicked.connect(self.pick_geometry)
-        h_geom = QHBoxLayout()
-        h_geom.addWidget(self.geom_path)
-        h_geom.addWidget(btn_browse_geom)
-        form.addRow("Geometry File:", h_geom)
-
-        # Simulation name
-        self.sim_name = QLineEdit()
+        form.addRow("Geometry File:", self.geom_path)
+        form.addRow("", browse_geom)
+        form.addRow("Output Folder:", self.out_path)
+        form.addRow("", browse_out)
         form.addRow("Simulation Name:", self.sim_name)
 
-        # Component type
-        self.comp_type = QComboBox()
-        self.comp_type.addItems(["Front Wing", "Rear Wing", "Undertray", "Half Car"])
-        form.addRow("Component Type:", self.comp_type)
-
-        # L, W, H inputs
-        self.box_L = QLineEdit()
-        self.box_W = QLineEdit()
-        self.box_H = QLineEdit()
-        form.addRow("L (m):", self.box_L)
-        form.addRow("W (m):", self.box_W)
-        form.addRow("H (m):", self.box_H)
-
-        # Output folder
-        self.out_path = QLineEdit()
-        btn_browse_out = QPushButton("Select Folder…")
-        btn_browse_out.clicked.connect(self.pick_output_folder)
-        h_out = QHBoxLayout()
-        h_out.addWidget(self.out_path)
-        h_out.addWidget(btn_browse_out)
-        form.addRow("Output Folder:", h_out)
+        # L, W, H required for enclosure sizing
+        form.addRow("Length (L):", self.L_field)
+        form.addRow("Width (W):", self.W_field)
+        form.addRow("Height (H):", self.H_field)
 
         layout.addLayout(form)
 
-        # Buttons
-        h_btns = QHBoxLayout()
-        btn_run_now = QPushButton("Run Now")
-        btn_add_queue = QPushButton("Add to Queue")
+        # --------------------------
+        # SECTION: Pipeline Buttons
+        # --------------------------
+        btn_layout = QtWidgets.QHBoxLayout()
 
-        btn_run_now.clicked.connect(self.run_now_clicked)
-        btn_add_queue.clicked.connect(self.add_queue_clicked)
+        self.btn_fw = QtWidgets.QPushButton("Run Front Wing")
+        self.btn_rw = QtWidgets.QPushButton("Run Rear Wing")
+        self.btn_ut = QtWidgets.QPushButton("Run Undertray")
+        self.btn_hc = QtWidgets.QPushButton("Run Half Car")
 
-        h_btns.addWidget(btn_run_now)
-        h_btns.addWidget(btn_add_queue)
+        self.btn_fw.clicked.connect(lambda: self.add_job("fw"))
+        self.btn_rw.clicked.connect(lambda: self.add_job("rw"))
+        self.btn_ut.clicked.connect(lambda: self.add_job("ut"))
+        self.btn_hc.clicked.connect(lambda: self.add_job("hc"))
 
-        layout.addLayout(h_btns)
+        btn_layout.addWidget(self.btn_fw)
+        btn_layout.addWidget(self.btn_rw)
+        btn_layout.addWidget(self.btn_ut)
+        btn_layout.addWidget(self.btn_hc)
 
-        # Progress Bar
-        self.progress_bar = QProgressBar()
-        layout.addWidget(self.progress_bar)
+        layout.addLayout(btn_layout)
 
-        # Status console
-        self.status_box = QTextEdit()
-        self.status_box.setReadOnly(True)
-        layout.addWidget(self.status_box)
+        # --------------------------
+        # SECTION: Queue controls
+        # --------------------------
+        queue_controls = QtWidgets.QHBoxLayout()
 
-        self.tab_run.setLayout(layout)
+        add_queue = QtWidgets.QPushButton("Add to Queue Only")
+        start_queue = QtWidgets.QPushButton("Start Queue")
 
+        add_queue.clicked.connect(self.add_to_queue_only)
+        start_queue.clicked.connect(self.start_queue)
 
-    # -----------------------------------------------------------
-    # TAB 2 — QUEUE SYSTEM
-    # -----------------------------------------------------------
-    def build_queue_tab(self):
-        layout = QVBoxLayout()
+        queue_controls.addWidget(add_queue)
+        queue_controls.addWidget(start_queue)
 
-        title = QLabel("Simulation Queue")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(title)
+        layout.addLayout(queue_controls)
 
-        self.queue_list = QListWidget()
-        layout.addWidget(self.queue_list)
-
-        btn_start_queue = QPushButton("Start Queue")
-        btn_clear_queue = QPushButton("Clear Queue")
-
-        btn_start_queue.clicked.connect(self.start_queue_clicked)
-        btn_clear_queue.clicked.connect(self.clear_queue_clicked)
-
-        h = QHBoxLayout()
-        h.addWidget(btn_start_queue)
-        h.addWidget(btn_clear_queue)
-
-        layout.addLayout(h)
-
-        self.tab_queue.setLayout(layout)
-
-
-    # -----------------------------------------------------------
-    # TAB 3 — RESULTS VIEWER
-    # -----------------------------------------------------------
-    def build_results_tab(self):
-        layout = QVBoxLayout()
-
-        title = QLabel("Results Viewer")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(title)
-
-        # Embedded image preview (set in Part 4)
-        self.result_label = QLabel("No results loaded.")
-        self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        layout.addWidget(self.result_label)
-
-        self.tab_results.setLayout(layout)
-
-
-    # -----------------------------------------------------------
-    # TAB 4 — LOG VIEWER
-    # -----------------------------------------------------------
-    def build_logs_tab(self):
-        layout = QVBoxLayout()
-
-        title = QLabel("Log Viewer")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(title)
-
-        self.log_box = QTextEdit()
+        # --------------------------
+        # SECTION: Log Window
+        # --------------------------
+        self.log_box = QtWidgets.QTextEdit()
         self.log_box.setReadOnly(True)
         layout.addWidget(self.log_box)
 
-        self.tab_logs.setLayout(layout)
+        # --------------------------
+        # SECTION: Queue Display
+        # --------------------------
+        self.queue_list = QtWidgets.QListWidget()
+        layout.addWidget(self.queue_list)
 
+        self.setLayout(layout)
 
-    # -----------------------------------------------------------
-    # TAB 5 — SETTINGS
-    # -----------------------------------------------------------
-    def build_settings_tab(self):
-        layout = QVBoxLayout()
+    # ============================================================
+    # Handlers
+    # ============================================================
+    def browse_geometry(self):
+        fname, _ = QFileDialog.getOpenFileName(self, "Select Geometry File", "", "CAD Files (*.stp *.step *.igs *.iges)")
+        if fname:
+            self.geom_path.setText(fname)
 
-        title = QLabel("Settings")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(title)
-
-        label = QLabel("No advanced settings available in Simple Mode.")
-        layout.addWidget(label)
-
-        self.tab_settings.setLayout(layout)
-
-
-    # -----------------------------------------------------------
-    # File pickers
-    # -----------------------------------------------------------
-    def pick_geometry(self):
-        file, _ = QFileDialog.getOpenFileName(self, "Select Geometry", "", "STEP Files (*.step *.stp)")
-        if file:
-            self.geom_path.setText(file)
-
-    def pick_output_folder(self):
+    def browse_output(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
         if folder:
             self.out_path.setText(folder)
 
+    def add_job(self, pipeline_name):
+        """User clicked one of the simulation buttons."""
+        job = self.build_job(pipeline_name)
+        if job:
+            self.manager.add_job(job)
+            self.queue_list.addItem(f"Queued: {job['sim_name']} ({pipeline_name.upper()})")
 
-    # -----------------------------------------------------------
-    # Button callbacks (sim manager connected in next phase)
-    # -----------------------------------------------------------
-    def run_now_clicked(self):
-        self.append_status("Run Now clicked (will connect once Pipeline Manager is added).")
+    def add_to_queue_only(self):
+        QMessageBox.information(self, "Queue", "Simulation added to queue. Press 'Start Queue' to run.")
 
-    def add_queue_clicked(self):
-        self.append_status("Added job to queue list.")
-        self.queue_list.addItem(f"{self.sim_name.text()}  |  {self.comp_type.currentText()}")
+    def start_queue(self):
+        """Executes entire queue sequentially."""
+        self.log("Starting simulation queue...")
+        self.manager.set_log_callback(self.log)
+        self.manager.run_all()
+        self.log("Queue finished.")
 
-    def start_queue_clicked(self):
-        self.append_status("Starting queue (pipeline added in simulation_manager).")
+    def build_job(self, sim_type):
+        """Build a job dictionary with all needed parameters."""
 
-    def clear_queue_clicked(self):
-        self.queue_list.clear()
-        self.append_status("Queue cleared.")
+        geom = self.geom_path.text().strip()
+        outdir = self.out_path.text().strip()
+        name = self.sim_name.text().strip()
 
+        if not geom or not os.path.exists(geom):
+            self.error("Geometry file invalid.")
+            return None
 
-    # -----------------------------------------------------------
-    # Logging helpers (GUI-only)
-    # -----------------------------------------------------------
-    def append_status(self, msg):
-        self.status_box.append(msg)
+        if not outdir or not os.path.exists(outdir):
+            self.error("Output folder invalid.")
+            return None
 
-    def append_log(self, msg):
+        if not name:
+            self.error("Simulation name required.")
+            return None
+
+        try:
+            L = float(self.L_field.text())
+            W = float(self.W_field.text())
+            H = float(self.H_field.text())
+        except:
+            self.error("L, W, H must be numeric.")
+            return None
+
+        # Select correct pipeline class
+        if sim_type == "fw":
+            pipeline_class = FrontWingPipeline
+        elif sim_type == "rw":
+            pipeline_class = RearWingPipeline
+        elif sim_type == "ut":
+            pipeline_class = UndertrayPipeline
+        elif sim_type == "hc":
+            pipeline_class = HalfCarPipeline
+        else:
+            self.error("Unknown simulation type.")
+            return None
+
+        # Job dictionary for SimulationManager
+        job = {
+            "pipeline_class": pipeline_class,
+            "geom": geom,
+            "outdir": os.path.join(outdir, name),
+            "sim_name": name,
+            "L": L,
+            "W": W,
+            "H": H
+        }
+
+        return job
+
+    # ============================================================
+    # Logging utilities
+    # ============================================================
+    def log(self, msg):
         self.log_box.append(msg)
+        self.log_box.verticalScrollBar().setValue(self.log_box.verticalScrollBar().maximum())
+
+    def error(self, msg):
+        QMessageBox.critical(self, "Error", msg)
+        self.log(f"ERROR: {msg}")
 
 
-# ---------------------------------------------------------------
-# APPLICATION ENTRY POINT
-# ---------------------------------------------------------------
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
+# ======================================================================
+# MAIN
+# ======================================================================
+def main():
+    app = QtWidgets.QApplication(sys.argv)
     win = MainWindow()
     win.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
