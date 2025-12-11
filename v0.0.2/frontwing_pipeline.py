@@ -2,7 +2,7 @@
 # Front Wing CFD pipeline (class-based)
 
 import os
-from pipelines.base_pipeline import BasePipeline
+from pipelines import BasePipeline
 
 
 class FrontWingPipeline(BasePipeline):
