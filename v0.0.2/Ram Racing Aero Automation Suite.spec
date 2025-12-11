@@ -3,13 +3,20 @@
 import os
 from PyInstaller.utils.hooks import collect_all
 
-# ----- Correct project directory (v0.0.2 folder) -----
-project_dir = os.path.abspath(os.path.dirname(__file__))
+# ---------------------------------------------------------
+# Get absolute path of this .spec file correctly
+# PyInstaller does NOT set __file__, so we use cwd
+# ---------------------------------------------------------
+project_dir = os.getcwd()
 
-# ----- Collect PySide6 components -----
+# ---------------------------------------------------------
+# Collect Pyside6 assets (Qt DLLs, plugins, etc.)
+# ---------------------------------------------------------
 pyside6_binaries, pyside6_datas, pyside6_hidden = collect_all("PySide6")
 
-# ----- Bundle ansys.units YAML files -----
+# ---------------------------------------------------------
+# Bundle ansys.units YAML files
+# ---------------------------------------------------------
 import ansys.units
 units_path = ansys.units.__path__[0]
 
@@ -17,38 +24,42 @@ datas = [
     (units_path, "ansys/units"),
 ] + pyside6_datas
 
-# ----- Hidden imports needed for Fluent core -----
+# ---------------------------------------------------------
+# Full hidden imports needed for Fluent + PySide6
+# ---------------------------------------------------------
 hiddenimports = [
+    # ansys units
     "ansys.units",
-    "ansys.units._version",
-    "ansys.units.common",
     "ansys.units.quantity",
-    "ansys.units._constants",
     "ansys.units.systems",
+    "ansys.units._constants",
+    "ansys.units.common",
 
+    # Fluent Core
     "ansys.fluent.core",
-    "ansys.fluent.visualization",
-    "ansys.fluent.visualization.contour",
-    "ansys.fluent.visualization.matplotlib",
-    "ansys.fluent.visualization.pyvista",
-
     "ansys.fluent.core.session_solver_lite",
     "ansys.fluent.core.utils.dump_session_data",
     "ansys.fluent.core.utils.event_loop",
     "ansys.fluent.core.utils.test_grpc_connection",
+
+    # Visualization
+    "ansys.fluent.visualization",
+    "ansys.fluent.visualization.contour",
+    "ansys.fluent.visualization.matplotlib",
+    "ansys.fluent.visualization.pyvista",
 ] + pyside6_hidden
 
 
 block_cipher = None
 
 a = Analysis(
-    ['main_gui.py'],       # entrypoint
-    pathex=[project_dir],  # your actual folder
+    ['main_gui.py'],
+    pathex=[project_dir],
     binaries=pyside6_binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     excludes=[
-        "PyQt5",    # prevent PyQt vs PySide conflicts
+        "PyQt5",   # Avoid conflicting Qt bindings
         "PyQt6",
         "qtpy"
     ],
@@ -67,5 +78,5 @@ exe = EXE(
     debug=False,
     strip=False,
     upx=False,
-    console=False  # GUI mode
+    console=False,
 )
