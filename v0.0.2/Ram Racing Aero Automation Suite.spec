@@ -24,34 +24,16 @@ datas = [
     (units_path, "ansys/units"),
 ] + pyside6_datas
 
-# ---------------------------------------------------------
-# Full hidden imports needed for Fluent + PySide6
-# ---------------------------------------------------------
+# -------------------------------
+# REQUIRED FIX FOR ANSYS PYFLUENT
+# -------------------------------
 hiddenimports = [
     "ansys.platform.instancemanagement",
+    "ansys.fluent.core",
     "ansys.fluent.core.session",
     "ansys.fluent.core.utils",
-    ,
-    # ansys units
     "ansys.units",
-    "ansys.units.quantity",
-    "ansys.units.systems",
-    "ansys.units._constants",
-    "ansys.units.common",
-
-    # Fluent Core
-    "ansys.fluent.core",
-    "ansys.fluent.core.session_solver_lite",
-    "ansys.fluent.core.utils.dump_session_data",
-    "ansys.fluent.core.utils.event_loop",
-    "ansys.fluent.core.utils.test_grpc_connection",
-
-    # Visualization
-    "ansys.fluent.visualization",
-    "ansys.fluent.visualization.contour",
-    "ansys.fluent.visualization.matplotlib",
-    "ansys.fluent.visualization.pyvista",
-] + pyside6_hidden
+]
 
 # Collect all data files for Fluent + instancemanagement
 fluent_datas = collect_data_files("ansys.fluent.core", include_py_files=True)
