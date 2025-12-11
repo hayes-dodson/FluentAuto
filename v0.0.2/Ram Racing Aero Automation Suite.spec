@@ -1,55 +1,56 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 import glob
-import ansys
-
+import importlib.util
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 block_cipher = None
 
-# =========================================================
-# 1) COLLECT EVERY ANSYS MODULE IN EXISTENCE
-# =========================================================
-hidden = []
-hidden += collect_submodules('ansys')
-hidden += collect_submodules('ansys.fluent')
-hidden += collect_submodules('ansys.fluent.core')
-hidden += collect_submodules('ansys.fluent.core.solver')
-hidden += collect_submodules('ansys.fluent.core.generated')
-hidden += collect_submodules('ansys.fluent.core.solver.settings_builtin')
-hidden += collect_submodules('ansys.fluent.core.solver.settings_builtin_bases')
-hidden += collect_submodules('ansys.units')
-hidden += collect_submodules('ansys.units.systems')
-hidden += collect_submodules('ansys.geometry')
-hidden += collect_submodules('ansys.platform')
-hidden += collect_submodules('ansys.dpf')
-hidden += collect_submodules('ansys.tools')
+# ------------------------------------------------------------
+# 1) Locate ansys.units safely using importlib (no namespace errors)
+# ------------------------------------------------------------
+spec = importlib.util.find_spec("ansys.units")
+if spec is None or not spec.submodule_search_locations:
+    raise RuntimeError("ansys.units is not installed or not visible to PyInstaller")
 
-# =========================================================
-# 2) COLLECT EVERY DATA FILE (YAML, CFG, TXT) INSIDE ANSYS
-# =========================================================
-data = []
-data += collect_data_files('ansys')
-data += collect_data_files('ansys.fluent')
-data += collect_data_files('ansys.units')
+units_root = spec.submodule_search_locations[0]
 
-# =========================================================
-# 3) FORCE IMPORT OF EVERY FLUENT/UNITS CONFIG FILE
-# =========================================================
-units_root = ansys.units.__path__[0]
-for f in glob.glob(os.path.join(units_root, "**", "*.*"), recursive=True):
-    rel = os.path.relpath(f, units_root)
-    data.append((f, os.path.join("ansys/units", rel)))
+# Collect ALL YAML files under ansys.units
+unit_yaml_files = []
+for path in glob.glob(os.path.join(units_root, "**", "*.yaml"), recursive=True):
+    rel = os.path.relpath(path, units_root).replace("\\", "/")
+    dest = os.path.join("ansys/units", rel).replace("\\", "/")
+    unit_yaml_files.append((path, dest))
 
-# =========================================================
-# 4) ADD YOUR PIPELINE SCRIPTS
-# =========================================================
+# ------------------------------------------------------------
+# 2) Collect ALL Ansys modules (maximum safety)
+# ------------------------------------------------------------
+hiddenimports = []
+hiddenimports += collect_submodules("ansys")
+hiddenimports += collect_submodules("ansys.fluent")
+hiddenimports += collect_submodules("ansys.fluent.core")
+hiddenimports += collect_submodules("ansys.fluent.core.solver")
+hiddenimports += collect_submodules("ansys.fluent.core.generated")
+hiddenimports += collect_submodules("ansys.units")
+
+# ------------------------------------------------------------
+# 3) Collect all Ansys data files (YAML, cfg, tables…)
+# ------------------------------------------------------------
+datas = []
+datas += collect_data_files("ansys")
+datas += collect_data_files("ansys.fluent")
+datas += collect_data_files("ansys.units")
+datas += unit_yaml_files  # Force-include all YAML files
+
+# ------------------------------------------------------------
+# 4) Include your pipeline files
+# ------------------------------------------------------------
 project_files = [
     ('main_gui.py', '.'),
     ('diagnostics.py', '.'),
     ('simulation_manager.py', '.'),
-    ('report_gen.py', '.'),
     ('worker_thread.py', '.'),
+    ('report_gen.py', '.'),
 
     ('frontwing_pipeline.py', '.'),
     ('rearwing_pipeline.py', '.'),
@@ -59,17 +60,17 @@ project_files = [
 ]
 
 for src, dest in project_files:
-    data.append((src, dest))
+    datas.append((src, dest))
 
-# =========================================================
-# 5) FINAL BUILD
-# =========================================================
+# ------------------------------------------------------------
+# 5) Build
+# ------------------------------------------------------------
 a = Analysis(
     ['main_gui.py'],
     pathex=['.'],
     binaries=[],
-    datas=data,
-    hiddenimports=hidden,
+    datas=datas,
+    hiddenimports=hiddenimports,
     noarchive=False,
 )
 
@@ -81,7 +82,6 @@ exe = EXE(
     a.binaries,
     a.zipfiles,
     a.datas,
-    name='Ram Racing Aero Automation Suite',
+    name="Ram Racing Aero Automation Suite",
     console=False,
-    icon=None,
 )
