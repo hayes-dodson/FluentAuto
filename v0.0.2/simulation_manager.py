@@ -1,34 +1,47 @@
 # simulation_manager.py
-# Updated for PySide6-safe GUI logging
+# Thread-safe job execution manager for PySide6 GUI
 
 import os
 import traceback
 
+
 class SimulationManager:
     """
-    Manages job queue execution for CFD pipelines.
-    Provides a log callback for GUI-safe logging.
+    Handles CFD job queue and provides logging + progress callbacks.
+    Updated for PySide6 QThread-based execution.
     """
 
     def __init__(self):
         self.jobs = []
         self.log_callback = None
+        self.progress_callback = None
 
-    # --------------------------------------------
-    # Logging helper
-    # --------------------------------------------
+    # --------------------------------------------------------------
+    # Callback setters
+    # --------------------------------------------------------------
+    def set_log_callback(self, fn):
+        """Assigns logging callback (GUI-safe)."""
+        self.log_callback = fn
+
+    def set_progress_callback(self, fn):
+        """Assigns progress stage callback (GUI-safe)."""
+        self.progress_callback = fn
+
+    # --------------------------------------------------------------
+    # Logging utilities
+    # --------------------------------------------------------------
     def log(self, msg: str):
-        print(msg)  # Always log to console
+        print(msg)
         if self.log_callback:
             self.log_callback(msg)
 
-    def set_log_callback(self, func):
-        """Assigns the GUI logging function."""
-        self.log_callback = func
+    def progress(self, stage: int):
+        if self.progress_callback:
+            self.progress_callback(stage)
 
-    # --------------------------------------------
-    # Job control
-    # --------------------------------------------
+    # --------------------------------------------------------------
+    # Queue handling
+    # --------------------------------------------------------------
     def add_job(self, job_dict):
         """Adds a job to the queue."""
         self.jobs.append(job_dict)
@@ -37,47 +50,61 @@ class SimulationManager:
         """Clears job queue."""
         self.jobs = []
 
-    # --------------------------------------------
-    # Execution
-    # --------------------------------------------
+    # --------------------------------------------------------------
+    # Sequential execution (used by QThread)
+    # --------------------------------------------------------------
+    def run_single_threadsafe(self, job):
+        """
+        Runs ONE CFD job. Called ONLY inside SimulationWorker::run().
+        Returns a dictionary describing outcome.
+        """
+
+        sim_name = job["sim_name"]
+        self.log(f"===== Starting Simulation: {sim_name} =====")
+
+        try:
+            pipeline_class = job["pipeline_class"]
+
+            # Create output folder
+            os.makedirs(job["outdir"], exist_ok=True)
+
+            # Instantiate pipeline with injected callbacks
+            pipeline = pipeline_class(
+                geom_path=job["geom"],
+                output_dir=job["outdir"],
+                sim_name=sim_name,
+                L=job["L"],
+                W=job["W"],
+                H=job["H"],
+                logfn=self.log,
+                progressfn=self.progress
+            )
+
+            # Execute pipeline
+            result = pipeline.run()
+
+            self.log(f"===== Simulation Complete: {sim_name} =====")
+            return {
+                "success": True,
+                "sim_name": sim_name,
+                "result": result
+            }
+
+        except Exception as e:
+            tb = traceback.format_exc()
+            self.log(f"ERROR during simulation '{sim_name}': {e}")
+            self.log(tb)
+            return {
+                "success": False,
+                "sim_name": sim_name,
+                "error": str(e),
+                "traceback": tb
+            }
+
+    # --------------------------------------------------------------
+    # Full queue execution (not used with QThread)
+    # --------------------------------------------------------------
     def run_all(self):
-        """Runs all queued jobs sequentially."""
-        if not self.jobs:
-            self.log("No jobs in queue.")
-            return
-
-        for i, job in enumerate(self.jobs, start=1):
-            name = job["sim_name"]
-            self.log(f"----- Running job {i}/{len(self.jobs)}: {name} -----")
-
-            try:
-                self.run_single(job)
-                self.log(f"Job '{name}' completed successfully.")
-
-            except Exception as e:
-                self.log(f"ERROR: Job '{name}' failed.\n{e}")
-                self.log(traceback.format_exc())
-
-        self.log("All queued simulations finished.")
-
-    # --------------------------------------------
-    # Run a single job
-    # --------------------------------------------
-    def run_single(self, job):
-        """Executes one pipeline job."""
-
-        pipeline_class = job["pipeline_class"]
-        pipeline = pipeline_class(
-            geom_path=job["geom"],
-            output_dir=job["outdir"],
-            sim_name=job["sim_name"],
-            L=job["L"],
-            W=job["W"],
-            H=job["H"],
-            log=self.log,
-        )
-
-        # Create directory if needed
-        os.makedirs(job["outdir"], exist_ok=True)
-
-        pipeline.run()
+        """Legacy mode: synchronous queue execution (blocks GUI)."""
+        for job in self.jobs:
+            self.run_single_threadsafe(job)
