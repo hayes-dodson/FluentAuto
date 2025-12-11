@@ -124,7 +124,7 @@ class MainWindow(QtWidgets.QWidget):
             self,
             "Select Geometry File",
             "",
-            "CAD Files (*.stp *.step *.igs *.iges)"
+            "Fluent Geometry (*.dsco *.pmdb);;All Files (*)"
         )
         if fname:
             self.geom_path.setText(fname)
@@ -209,7 +209,6 @@ def main():
     win = MainWindow()
     win.show()
     sys.exit(app.exec())
-    # NOTE: PySide6 uses exec(), NOT exec_()
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.0.1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v0.0.2/Ram Racing Aero Automation Suite.spec" beforeDir="false" afterPath="$PROJECT_DIR$/v0.0.2/Ram Racing Aero Automation Suite.spec" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/v0.0.2/main_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/v0.0.2/main_gui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,6 +51,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.fc26g40.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.main_gui.executor": "Run",
     "Python.test_qt.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -74,7 +75,7 @@
       <recent name="C:\Users\Hayes Dodson\PycharmProjects\FluentAuto\backup" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test_qt">
+  <component name="RunManager" selected="Python.main_gui">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="FluentAuto" />
       <option name="ENV_FILES" value="" />
@@ -90,6 +91,29 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/FSAE_CFD_Automation/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_gui" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="FluentAuto" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/v0.0.2" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/v0.0.2/main_gui.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -123,6 +147,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_gui" />
         <item itemvalue="Python.test_qt" />
         <item itemvalue="Python.main" />
       </list>
@@ -146,23 +171,7 @@
       <workItem from="1764759616143" duration="11573000" />
       <workItem from="1764782940924" duration="403000" />
       <workItem from="1765399617043" duration="604000" />
-      <workItem from="1765400399610" duration="26952000" />
-    </task>
-    <task id="LOCAL-00019" summary="v0.0.1">
-      <option name="closed" value="true" />
-      <created>1764770570801</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1764770570801</updated>
-    </task>
-    <task id="LOCAL-00020" summary="v0.0.1">
-      <option name="closed" value="true" />
-      <created>1765401144065</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1765401144065</updated>
+      <workItem from="1765400399610" duration="29959000" />
     </task>
     <task id="LOCAL-00021" summary="v0.0.1">
       <option name="closed" value="true" />
@@ -540,7 +549,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765431692561</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <task id="LOCAL-00068" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1765432517569</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1765432517570</updated>
+    </task>
+    <task id="LOCAL-00069" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1765432523941</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1765432523941</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -563,8 +588,9 @@
     <option name="LAST_COMMIT_MESSAGE" value="v0.0.1" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/FluentAuto$test_qt.coverage" NAME="test_qt Coverage Results" MODIFIED="1765414855775" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
+    <SUITE FILE_PATH="coverage/FluentAuto$test_qt.coverage" NAME="test_qt Coverage Results" MODIFIED="1765433453297" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
     <SUITE FILE_PATH="coverage/FluentAuto$fc26g40.coverage" NAME="fc26g40 Coverage Results" MODIFIED="1764783357562" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
+    <SUITE FILE_PATH="coverage/FluentAuto$main_gui.coverage" NAME="main_gui Coverage Results" MODIFIED="1765433637159" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/v0.0.2" />
     <SUITE FILE_PATH="coverage/FluentAuto$main.coverage" NAME="main Coverage Results" MODIFIED="1764783351251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FSAE_CFD_Automation" />
   </component>
 </project>
