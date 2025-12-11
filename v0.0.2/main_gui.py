@@ -69,9 +69,9 @@ class MainWindow(QWidget):
         self.out_path = QLineEdit()
         self.sim_name = QLineEdit()
 
-        self.L_field = QLineLineEdit("3.1")
-        self.W_field = QLineLineEdit("1.40462")
-        self.H_field = QLineLineEdit("1.19507")
+        self.L_field = QLineEdit("3.1")
+        self.W_field = QLineEdit("1.40462")
+        self.H_field = QLineEdit("1.19507")
 
         browse_geom = QPushButton("Browse Geometry")
         browse_geom.clicked.connect(self.browse_geometry)

@@ -1,136 +1,83 @@
 # simulation_manager.py
-# Ram Racing FSAE Aero Automation Suite
-# Sequential queue manager for CFD pipelines
+# Updated for PySide6-safe GUI logging
 
 import os
 import traceback
-import datetime
-
 
 class SimulationManager:
+    """
+    Manages job queue execution for CFD pipelines.
+    Provides a log callback for GUI-safe logging.
+    """
 
     def __init__(self):
-        self.jobs = []                 # list of job dictionaries
-        self.log_callback = None       # GUI log function
+        self.jobs = []
+        self.log_callback = None
 
-    # ------------------------------------------------------------
-    # LOGGING
-    # ------------------------------------------------------------
-    def log(self, msg):
-        timestamp = datetime.datetime.now().strftime("[%H:%M:%S] ")
-        text = timestamp + msg
-        print(text)
-
+    # --------------------------------------------
+    # Logging helper
+    # --------------------------------------------
+    def log(self, msg: str):
+        print(msg)  # Always log to console
         if self.log_callback:
-            self.log_callback(text)
+            self.log_callback(msg)
 
-    def set_log_callback(self, callback):
-        self.log_callback = callback
+    def set_log_callback(self, func):
+        """Assigns the GUI logging function."""
+        self.log_callback = func
 
-    # ------------------------------------------------------------
-    # JOB QUEUE METHODS
-    # ------------------------------------------------------------
+    # --------------------------------------------
+    # Job control
+    # --------------------------------------------
     def add_job(self, job_dict):
-        """
-        A job looks like:
-        {
-            "pipeline_class": FrontWingPipeline,
-            "geom": "...",
-            "outdir": "...",
-            "sim_name": "...",
-            "L": float,
-            "W": float,
-            "H": float
-        }
-        """
+        """Adds a job to the queue."""
         self.jobs.append(job_dict)
 
     def clear(self):
+        """Clears job queue."""
         self.jobs = []
 
-    # ------------------------------------------------------------
-    # MAIN QUEUE EXECUTION
-    # ------------------------------------------------------------
+    # --------------------------------------------
+    # Execution
+    # --------------------------------------------
     def run_all(self):
-        """
-        Run all queued CFD jobs sequentially.
-        """
-
+        """Runs all queued jobs sequentially."""
         if not self.jobs:
-            self.log("No simulations in queue.")
+            self.log("No jobs in queue.")
             return
 
-        self.log(f"Starting {len(self.jobs)} queued simulations...")
-
         for i, job in enumerate(self.jobs, start=1):
-
-            self.log(f"--- Simulation {i}/{len(self.jobs)} ---")
-            self.log(f"Preparing: {job['sim_name']}")
+            name = job["sim_name"]
+            self.log(f"----- Running job {i}/{len(self.jobs)}: {name} -----")
 
             try:
-                self.run_single_job(job)
+                self.run_single(job)
+                self.log(f"Job '{name}' completed successfully.")
 
             except Exception as e:
-                self.log(f"ERROR during simulation '{job['sim_name']}': {e}")
+                self.log(f"ERROR: Job '{name}' failed.\n{e}")
                 self.log(traceback.format_exc())
-                continue
 
-        self.log("All queued simulations complete.")
+        self.log("All queued simulations finished.")
 
-    # ------------------------------------------------------------
-    # RUN ONE SIMULATION
-    # ------------------------------------------------------------
-    def run_single_job(self, job):
-        """
-        Execute the pipeline for one simulation.
-        """
+    # --------------------------------------------
+    # Run a single job
+    # --------------------------------------------
+    def run_single(self, job):
+        """Executes one pipeline job."""
 
         pipeline_class = job["pipeline_class"]
-        geom = job["geom"]
-        base_out = job["outdir"]
-        name = job["sim_name"]
-
-        L = job["L"]
-        W = job["W"]
-        H = job["H"]
-
-        # Create the simulation output dir
-        outdir = base_out
-        os.makedirs(outdir, exist_ok=True)
-
-        self.log(f"Output directory: {outdir}")
-
-        # ----------------------------------
-        # Construct pipeline instance
-        # ----------------------------------
         pipeline = pipeline_class(
-            geom_path=geom,
-            sim_dir=outdir,
-            L=L,
-            W=W,
-            H=H
+            geom_path=job["geom"],
+            output_dir=job["outdir"],
+            sim_name=job["sim_name"],
+            L=job["L"],
+            W=job["W"],
+            H=job["H"],
+            log=self.log,
         )
 
-        # ----------------------------------
-        # MESHING
-        # ----------------------------------
-        self.log("Meshing started...")
-        mesh_file = pipeline.run_meshing()
-        self.log(f"Meshing finished: {mesh_file}")
+        # Create directory if needed
+        os.makedirs(job["outdir"], exist_ok=True)
 
-        # ----------------------------------
-        # SOLVER
-        # ----------------------------------
-        self.log("Solver started...")
-        results = pipeline.run_solver(mesh_file)
-        self.log("Solver finished.")
-
-        # ----------------------------------
-        # REPORT GENERATION
-        # ----------------------------------
-        self.log("Exporting final PDF report...")
-        report = pipeline.export_results(results)
-        self.log(f"Report generated: {report}")
-
-        self.log(f"Simulation '{name}' complete.\n")
-
+        pipeline.run()
