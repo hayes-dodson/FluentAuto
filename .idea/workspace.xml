@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.0.1">
+    <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/v0.0.2/main_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/v0.0.2/main_gui.py" afterDir="false" />
     </list>
@@ -172,14 +172,6 @@
       <workItem from="1764782940924" duration="403000" />
       <workItem from="1765399617043" duration="604000" />
       <workItem from="1765400399610" duration="29959000" />
-    </task>
-    <task id="LOCAL-00021" summary="v0.0.1">
-      <option name="closed" value="true" />
-      <created>1765401449306</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1765401449306</updated>
     </task>
     <task id="LOCAL-00022" summary="v0.0.1">
       <option name="closed" value="true" />
@@ -565,7 +557,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765432523941</updated>
     </task>
-    <option name="localTasksCounter" value="70" />
+    <task id="LOCAL-00070" summary="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128">
+      <option name="closed" value="true" />
+      <created>1765436595920</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1765436595920</updated>
+    </task>
+    <option name="localTasksCounter" value="71" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -585,12 +585,13 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="InitialCommit" />
     <MESSAGE value="v0.0.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.0.1" />
+    <MESSAGE value="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128" />
+    <option name="LAST_COMMIT_MESSAGE" value="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/FluentAuto$test_qt.coverage" NAME="test_qt Coverage Results" MODIFIED="1765433453297" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
     <SUITE FILE_PATH="coverage/FluentAuto$fc26g40.coverage" NAME="fc26g40 Coverage Results" MODIFIED="1764783357562" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
-    <SUITE FILE_PATH="coverage/FluentAuto$main_gui.coverage" NAME="main_gui Coverage Results" MODIFIED="1765433637159" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/v0.0.2" />
+    <SUITE FILE_PATH="coverage/FluentAuto$main_gui.coverage" NAME="main_gui Coverage Results" MODIFIED="1765436604278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/v0.0.2" />
     <SUITE FILE_PATH="coverage/FluentAuto$main.coverage" NAME="main Coverage Results" MODIFIED="1764783351251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FSAE_CFD_Automation" />
   </component>
 </project>
