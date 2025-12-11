@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.0.1">
-      <change afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DEVELOPMENT.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ENVIRONMENT.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backup/test_qt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v0.0.2/main_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/v0.0.2/main_gui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +51,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.fc26g40.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.test_qt.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -76,7 +74,7 @@
       <recent name="C:\Users\Hayes Dodson\PycharmProjects\FluentAuto\backup" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.test_qt">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="FluentAuto" />
       <option name="ENV_FILES" value="" />
@@ -100,8 +98,32 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test_qt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="FluentAuto" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backup" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backup/test_qt.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test_qt" />
         <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
@@ -124,7 +146,7 @@
       <workItem from="1764759616143" duration="11573000" />
       <workItem from="1764782940924" duration="403000" />
       <workItem from="1765399617043" duration="604000" />
-      <workItem from="1765400399610" duration="10291000" />
+      <workItem from="1765400399610" duration="12917000" />
     </task>
     <task id="LOCAL-00001" summary="InitialCommit">
       <option name="closed" value="true" />
@@ -438,7 +460,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765409244609</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="v0.0.1">
+      <option name="closed" value="true" />
+      <created>1765410834509</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1765410834509</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -461,6 +491,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="v0.0.1" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/FluentAuto$test_qt.coverage" NAME="test_qt Coverage Results" MODIFIED="1765414855775" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
     <SUITE FILE_PATH="coverage/FluentAuto$fc26g40.coverage" NAME="fc26g40 Coverage Results" MODIFIED="1764783357562" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
     <SUITE FILE_PATH="coverage/FluentAuto$main.coverage" NAME="main Coverage Results" MODIFIED="1764783351251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FSAE_CFD_Automation" />
   </component>
