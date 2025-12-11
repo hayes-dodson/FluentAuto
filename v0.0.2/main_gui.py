@@ -15,7 +15,6 @@ from undertray_pipeline import UndertrayPipeline
 from halfcar_pipeline import HalfCarPipeline
 
 
-
 class MainWindow(QtWidgets.QWidget):
 
     def __init__(self):

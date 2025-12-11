@@ -1,81 +1,108 @@
 # -*- mode: python ; coding: utf-8 -*-
+
 import os
-import glob
-import importlib.util
-from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+import ansys.fluent.core
+import ansys.units
+import PySide6
 
-block_cipher = None
+project_root = os.path.abspath(os.getcwd())
 
-# ------------------------------------------------------------
-# 1) Locate ansys.units safely using importlib (no namespace errors)
-# ------------------------------------------------------------
-spec = importlib.util.find_spec("ansys.units")
-if spec is None or not spec.submodule_search_locations:
-    raise RuntimeError("ansys.units is not installed or not visible to PyInstaller")
+# -----------------------------
+# PACKAGE ROOTS
+# -----------------------------
+fluent_root = os.path.dirname(ansys.fluent.core.__file__)
+units_root  = os.path.dirname(ansys.units.__file__)
+pyside_root = os.path.dirname(PySide6.__file__)
 
-units_root = spec.submodule_search_locations[0]
+# -----------------------------
+# DATA FILE COLLECTION
+# -----------------------------
+datas = [
+    # PySide6 plugins
+    (os.path.join(pyside_root, "plugins"), "PySide6/plugins"),
 
-# Collect ALL YAML files under ansys.units
-unit_yaml_files = []
-for path in glob.glob(os.path.join(units_root, "**", "*.yaml"), recursive=True):
-    rel = os.path.relpath(path, units_root).replace("\\", "/")
-    dest = os.path.join("ansys/units", rel).replace("\\", "/")
-    unit_yaml_files.append((path, dest))
+    # Ansys Fluent units YAMLs
+    (os.path.join(units_root, "quantity_tables"), "ansys/units/quantity_tables"),
+    (os.path.join(units_root, "cfg.yaml"), "ansys/units"),
 
-# ------------------------------------------------------------
-# 2) Collect ALL Ansys modules (maximum safety)
-# ------------------------------------------------------------
-hiddenimports = []
-hiddenimports += collect_submodules("ansys")
-hiddenimports += collect_submodules("ansys.fluent")
-hiddenimports += collect_submodules("ansys.fluent.core")
-hiddenimports += collect_submodules("ansys.fluent.core.solver")
-hiddenimports += collect_submodules("ansys.fluent.core.generated")
-hiddenimports += collect_submodules("ansys.units")
+    # Fluent generated YAML schemas (prevents missing settings_builtin errors)
+    (os.path.join(fluent_root, "generated"), "ansys/fluent/core/generated"),
 
-# ------------------------------------------------------------
-# 3) Collect all Ansys data files (YAML, cfg, tables…)
-# ------------------------------------------------------------
-datas = []
-datas += collect_data_files("ansys")
-datas += collect_data_files("ansys.fluent")
-datas += collect_data_files("ansys.units")
-datas += unit_yaml_files  # Force-include all YAML files
+    # Include local pipeline modules
+    (os.path.join(project_root, "pipelines"), "pipelines"),
 
-# ------------------------------------------------------------
-# 4) Include your pipeline files
-# ------------------------------------------------------------
-project_files = [
-    ('main_gui.py', '.'),
-    ('diagnostics.py', '.'),
-    ('simulation_manager.py', '.'),
-    ('worker_thread.py', '.'),
-    ('report_gen.py', '.'),
-
-    ('frontwing_pipeline.py', '.'),
-    ('rearwing_pipeline.py', '.'),
-    ('undertray_pipeline.py', '.'),
-    ('halfcar_pipeline.py', '.'),
-    ('pipelines.py', '.'),
+    # Diagnostics + manager
+    (os.path.join(project_root, "diagnostics.py"), "."),
+    (os.path.join(project_root, "simulation_manager.py"), "."),
 ]
 
-for src, dest in project_files:
-    datas.append((src, dest))
+# -----------------------------
+# HIDDEN IMPORTS
+# -----------------------------
+hidden_imports = [
+    # PySide6
+    "PySide6",
+    "PySide6.QtWidgets",
+    "PySide6.QtCore",
+    "PySide6.QtGui",
+    "PySide6.QtNetwork",
 
-# ------------------------------------------------------------
-# 5) Build
-# ------------------------------------------------------------
+    # Fluent
+    "ansys.fluent.core",
+    "ansys.fluent.core.ui",
+    "ansys.fluent.core.report",
+    "ansys.fluent.core.file_session",
+    "ansys.fluent.core.session_solver_lite",
+
+    # Fluent post objects
+    "ansys.fluent.interface",
+    "ansys.fluent.interface.post_objects",
+    "ansys.fluent.visualization",
+    "ansys.fluent.visualization.contour",
+    "ansys.fluent.visualization.matplotlib",
+    "ansys.fluent.visualization.pyvista",
+
+    # Units
+    "ansys.units",
+    "ansys.units._constants",
+    "ansys.units.common",
+    "ansys.units.quantity",
+    "ansys.units.systems",
+]
+
+# -----------------------------
+# EXCLUDES (CRITICAL!)
+# -----------------------------
+excludes = [
+    "PyQt5",
+    "PyQt5.QtWidgets",
+    "PyQt5.QtCore",
+    "PyQt5.QtGui",
+]
+
+# -----------------------------
+# ANALYSIS BLOCK
+# -----------------------------
 a = Analysis(
-    ['main_gui.py'],
-    pathex=['.'],
+    ["main_gui.py"],
+    pathex=[project_root],
     binaries=[],
     datas=datas,
-    hiddenimports=hiddenimports,
-    noarchive=False,
+    hiddenimports=hidden_imports,
+    hookspath=[],
+    runtime_hooks=[],
+    excludes=excludes,
+    noarchive=False
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+# -----------------------------
+# FREEZER
+# -----------------------------
+pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
+# -----------------------------
+# EXECUTABLE
+# -----------------------------
 exe = EXE(
     pyz,
     a.scripts,
@@ -83,5 +110,10 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     name="Ram Racing Aero Automation Suite",
-    console=False,
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=False,
+    console=False,   # hides console window
 )
+
