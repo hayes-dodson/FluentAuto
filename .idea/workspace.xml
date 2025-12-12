@@ -4,9 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128">
+    <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.1.0">
+      <change afterPath="$PROJECT_DIR$/main/diagnostics.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/frontwing_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/halfcar_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/main_gui.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/pipelines.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/rearwing_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/report_gen.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/simulation_manager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/undertray_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/worker_thread.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v0.0.2/main_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/v0.0.2/main_gui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,7 +30,13 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="hayes-dodson &lt;hayes.t.dodson@gmail.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="SIGN_OFF_COMMIT" value="true" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -172,14 +187,7 @@
       <workItem from="1764782940924" duration="403000" />
       <workItem from="1765399617043" duration="604000" />
       <workItem from="1765400399610" duration="29959000" />
-    </task>
-    <task id="LOCAL-00022" summary="v0.0.1">
-      <option name="closed" value="true" />
-      <created>1765402001956</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1765402001956</updated>
+      <workItem from="1765492819608" duration="1910000" />
     </task>
     <task id="LOCAL-00023" summary="v0.0.1">
       <option name="closed" value="true" />
@@ -565,7 +573,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765436595920</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary="v0.1.0">
+      <option name="closed" value="true" />
+      <created>1765437847878</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1765437847878</updated>
+    </task>
+    <option name="localTasksCounter" value="72" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -586,12 +602,13 @@
     <MESSAGE value="InitialCommit" />
     <MESSAGE value="v0.0.1" />
     <MESSAGE value="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128" />
-    <option name="LAST_COMMIT_MESSAGE" value="Revert &quot;v0.0.1&quot;&#10;&#10;This reverts commit a0037128" />
+    <MESSAGE value="v0.1.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.1.0" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/FluentAuto$test_qt.coverage" NAME="test_qt Coverage Results" MODIFIED="1765433453297" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
     <SUITE FILE_PATH="coverage/FluentAuto$fc26g40.coverage" NAME="fc26g40 Coverage Results" MODIFIED="1764783357562" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backup" />
-    <SUITE FILE_PATH="coverage/FluentAuto$main_gui.coverage" NAME="main_gui Coverage Results" MODIFIED="1765436604278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/v0.0.2" />
+    <SUITE FILE_PATH="coverage/FluentAuto$main_gui.coverage" NAME="main_gui Coverage Results" MODIFIED="1765492823851" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/v0.0.2" />
     <SUITE FILE_PATH="coverage/FluentAuto$main.coverage" NAME="main Coverage Results" MODIFIED="1764783351251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FSAE_CFD_Automation" />
   </component>
 </project>
