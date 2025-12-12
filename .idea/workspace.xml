@@ -5,17 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c197db6e-04d4-426f-a8f9-1c25d58b2d0b" name="Changes" comment="v0.1.0">
-      <change afterPath="$PROJECT_DIR$/main/diagnostics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/frontwing_pipeline.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/halfcar_pipeline.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/main_gui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/pipelines.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/rearwing_pipeline.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/report_gen.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/simulation_manager.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/undertray_pipeline.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/worker_thread.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/frontwing_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/frontwing_pipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/rearwing_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/rearwing_pipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/undertray_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/undertray_pipeline.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -187,15 +180,7 @@
       <workItem from="1764782940924" duration="403000" />
       <workItem from="1765399617043" duration="604000" />
       <workItem from="1765400399610" duration="29959000" />
-      <workItem from="1765492819608" duration="1910000" />
-    </task>
-    <task id="LOCAL-00023" summary="v0.0.1">
-      <option name="closed" value="true" />
-      <created>1765402024526</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1765402024526</updated>
+      <workItem from="1765492819608" duration="2673000" />
     </task>
     <task id="LOCAL-00024" summary="v0.0.1">
       <option name="closed" value="true" />
@@ -581,7 +566,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765437847878</updated>
     </task>
-    <option name="localTasksCounter" value="72" />
+    <task id="LOCAL-00072" summary="v0.1.0">
+      <option name="closed" value="true" />
+      <created>1765519940951</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1765519940951</updated>
+    </task>
+    <option name="localTasksCounter" value="73" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
